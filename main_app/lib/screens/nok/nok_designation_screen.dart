@@ -31,33 +31,45 @@ class _NokDesignationScreenState extends ConsumerState<NokDesignationScreen> {
 
     setState(() => _isLoading = true);
 
-    final success = await ref.read(nokProvider.notifier).designateNok(
-      nokMobile: _mobileController.text.trim(),
-      nokName: _nameController.text.trim(),
-      relationship: _selectedRelationship,
-    );
+    try {
+      final success = await ref.read(nokProvider.notifier).designateNok(
+        nokMobile: _mobileController.text.trim(),
+        nokName: _nameController.text.trim(),
+        relationship: _selectedRelationship,
+      );
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      
-      if (success) {
-        final designation = ref.read(nokProvider).designation;
-        if (designation != null) {
-          // Emit socket event to notify NOK
-          SocketService().emitNokDesignate(designation.id);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        
+        if (success) {
+          final designation = ref.read(nokProvider).designation;
+          if (designation != null) {
+            // Emit socket event to notify NOK
+            SocketService().emitNokDesignate(designation.id);
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('NOK designated successfully!'),
+              backgroundColor: AppConstants.successColor,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(ref.read(nokProvider).error ?? 'Failed to designate NOK'),
+              backgroundColor: AppConstants.errorColor,
+            ),
+          );
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('NOK designated successfully!'),
-            backgroundColor: AppConstants.successColor,
-          ),
-        );
-        Navigator.pop(context);
-      } else {
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ref.read(nokProvider).error ?? 'Failed to designate NOK'),
+            content: Text('Error: $e'),
             backgroundColor: AppConstants.errorColor,
           ),
         );
@@ -139,9 +151,15 @@ class _NokDesignationScreenState extends ConsumerState<NokDesignationScreen> {
                 TextFormField(
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
-                  validator: Validators.validateMobile,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Mobile number is required';
+                    }
+                    return null;
+                  },
                   decoration: InputDecoration(
                     hintText: '+919123456789',
+                    helperText: 'Include country code (e.g., +91)',
                     prefixIcon: const Icon(Icons.phone),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppConstants.radiusMD),

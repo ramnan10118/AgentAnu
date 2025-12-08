@@ -27,17 +27,17 @@ class DesignationModel {
 
   factory DesignationModel.fromJson(Map<String, dynamic> json) {
     return DesignationModel(
-      id: json['id'] as String,
-      accountHolderId: json['accountHolderId'] as String,
-      accountHolderName: json['accountHolderName'] as String?,
-      accountHolderMobile: json['accountHolderMobile'] as String?,
-      nokMobile: json['nokMobile'] as String,
-      nokName: json['nokName'] as String,
-      relationship: json['relationship'] as String,
-      status: json['status'] as String,
-      designatedAt: json['designatedAt'] as String,
-      respondedAt: json['respondedAt'] as String?,
-      rejectionReason: json['rejectionReason'] as String?,
+      id: json['id']?.toString() ?? '',
+      accountHolderId: json['accountHolderId']?.toString() ?? '',
+      accountHolderName: json['accountHolderName']?.toString(),
+      accountHolderMobile: json['accountHolderMobile']?.toString(),
+      nokMobile: json['nokMobile']?.toString() ?? '',
+      nokName: json['nokName']?.toString() ?? '',
+      relationship: json['relationship']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'pending',
+      designatedAt: json['designatedAt']?.toString() ?? DateTime.now().toIso8601String(),
+      respondedAt: json['respondedAt']?.toString(),
+      rejectionReason: json['rejectionReason']?.toString(),
     );
   }
 
