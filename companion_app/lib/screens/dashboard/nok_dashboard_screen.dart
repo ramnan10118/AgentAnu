@@ -10,7 +10,7 @@ import '../death/upload_death_certificate_screen.dart';
 import '../auth/mobile_entry_screen.dart';
 
 class NokDashboardScreen extends ConsumerStatefulWidget {
-  const NokDashboardScreen({super.key};
+  const NokDashboardScreen({super.key});
 
   @override
   ConsumerState<NokDashboardScreen> createState() => _NokDashboardScreenState();
