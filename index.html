@@ -739,10 +739,11 @@
                 }
             }
             
-            // Ensure flip cards and collapsible cards are set up
+            // Ensure flip cards, collapsible cards, and sticky are set up
             if (typeof Components !== 'undefined') {
                 Components.setupFlipCards();
                 Components.setupCollapsibleCards();
+                Components.setupStickyNetWorth();
             }
         }, 500);
     </script>

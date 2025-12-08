@@ -35,8 +35,12 @@ function initializeApp() {
         if (typeof Components !== 'undefined') {
             setTimeout(() => {
                 Components.setupFlipCards();
-                Components.setupStickyNetWorth();
             }, 100);
+            
+            // Setup sticky net worth - needs to wait for layout
+            setTimeout(() => {
+                Components.setupStickyNetWorth();
+            }, 500);
             
             // Setup collapsible cards with a longer delay to ensure all content is loaded
             setTimeout(() => {
