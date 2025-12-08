@@ -5,7 +5,12 @@ const AssetManager = {
 
     init() {
         // Initialize with mock data
+        if (typeof mockAssetData === 'undefined') {
+            console.error('mockAssetData is not defined! Make sure data.js is loaded before assetManager.js');
+            return;
+        }
         this.assetData = JSON.parse(JSON.stringify(mockAssetData));
+        console.log('AssetManager initialized with data:', this.assetData);
     },
 
     // Add a new asset extracted from document

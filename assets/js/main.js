@@ -1,23 +1,60 @@
 // Main Application Initialization
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Asset Manager
-    AssetManager.init();
+function initializeApp() {
+    console.log('Initializing app...');
+    
+    try {
+        // Initialize Asset Manager
+        if (typeof AssetManager !== 'undefined') {
+            AssetManager.init();
+        } else {
+            console.error('AssetManager is not defined!');
+            return;
+        }
 
-    // Initialize Document Manager
-    DocumentManager.init();
+        // Initialize Document Manager
+        if (typeof DocumentManager !== 'undefined') {
+            DocumentManager.init();
+        }
 
-    // Initialize Asset Upload
-    AssetUpload.init();
+        // Initialize Asset Upload
+        if (typeof AssetUpload !== 'undefined') {
+            AssetUpload.init();
+        }
 
-    // Load mock data for visualization
-    // TODO: Replace with Account Aggregator API call
-    // Example: fetchAccountAggregatorData().then(Assets.updateAssetData);
-    Assets.updateAssetData(AssetManager.getAssetData());
+        // Load mock data for visualization
+        const assetData = AssetManager.getAssetData();
+        console.log('Got asset data:', assetData);
+        
+        if (typeof Assets !== 'undefined') {
+            Assets.updateAssetData(assetData);
+        } else {
+            console.error('Assets object is not defined!');
+        }
 
-    // Setup flip card interactions
-    Components.setupFlipCards();
+        // Setup flip card interactions - delay slightly to ensure DOM is ready
+        if (typeof Components !== 'undefined') {
+            setTimeout(() => {
+                Components.setupFlipCards();
+                Components.setupStickyNetWorth();
+            }, 100);
+            
+            // Setup collapsible cards with a longer delay to ensure all content is loaded
+            setTimeout(() => {
+                Components.setupCollapsibleCards();
+            }, 300);
+        }
+        
+        console.log('App initialization complete');
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+}
 
-    // Setup sticky net worth card
-    Components.setupStickyNetWorth();
-});
+// Run immediately if DOM is ready, otherwise wait
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    // DOM is already ready
+    initializeApp();
+}
 

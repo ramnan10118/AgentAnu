@@ -202,31 +202,12 @@ const Assets = {
             const container = document.getElementById('bankSavingsFlipDetails');
             const accounts = data.bankSavings.details;
             const totalAccounts = accounts.length;
-            const savingsAccounts = accounts.filter(a => a.type === 'Savings').length;
-            const currentAccounts = accounts.filter(a => a.type === 'Current').length;
-            const largestAccount = accounts.reduce((max, acc) => acc.balance > max.balance ? acc : max, accounts[0]);
-            const avgBalance = Math.round(data.bankSavings.total / totalAccounts);
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total Accounts</p>
-                            <p class="text-lg font-bold">${totalAccounts}</p>
-                        </div>
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Avg Balance</p>
-                            <p class="text-sm font-semibold">${Utils.formatCurrency(avgBalance)}</p>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Account Types</p>
-                        <p class="text-sm font-medium">${savingsAccounts} Savings • ${currentAccounts} Current</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Largest Account</p>
-                        <p class="text-sm font-semibold">${largestAccount.bank}</p>
-                        <p class="text-xs text-muted-foreground">${Utils.formatCurrency(largestAccount.balance)}</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalAccounts}</p>
+                        <p class="text-xs text-muted-foreground">Bank Accounts</p>
                     </div>
                 </div>
             `;
@@ -237,30 +218,12 @@ const Assets = {
             const container = document.getElementById('loansFlipDetails');
             const loans = data.loans.details;
             const totalLoans = loans.length;
-            const totalEMI = loans.reduce((sum, loan) => sum + loan.emi, 0);
-            const avgRemainingMonths = Math.round(loans.reduce((sum, loan) => sum + loan.remainingMonths, 0) / totalLoans);
-            const homeLoans = loans.filter(l => l.purpose === 'House Purchase').length;
-            const personalLoans = loans.filter(l => l.purpose === 'Personal').length;
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total Loans</p>
-                            <p class="text-lg font-bold">${totalLoans}</p>
-                        </div>
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total EMI</p>
-                            <p class="text-sm font-semibold">${Utils.formatCurrency(totalEMI)}</p>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Loan Types</p>
-                        <p class="text-sm font-medium">${homeLoans} Home • ${personalLoans} Personal</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Avg Remaining</p>
-                        <p class="text-sm font-semibold">${avgRemainingMonths} months</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalLoans}</p>
+                        <p class="text-xs text-muted-foreground">Active Loans</p>
                     </div>
                 </div>
             `;
@@ -270,30 +233,13 @@ const Assets = {
         if (data.assets && data.assets.details) {
             const container = document.getElementById('assetsFlipDetails');
             const assets = data.assets.details;
-            const propertyAssets = assets.filter(a => a.type === 'Property' || a.type === 'Land');
-            const vehicleAssets = assets.filter(a => a.type === 'Vehicle');
-            const largestAsset = assets.reduce((max, asset) => asset.value > max.value ? asset : max, assets[0]);
+            const totalAssets = assets.length;
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total Assets</p>
-                            <p class="text-lg font-bold">${assets.length}</p>
-                        </div>
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Properties</p>
-                            <p class="text-sm font-semibold">${propertyAssets.length}</p>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Asset Breakdown</p>
-                        <p class="text-sm font-medium">${propertyAssets.length} Property • ${vehicleAssets.length} Vehicle</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Largest Asset</p>
-                        <p class="text-sm font-semibold">${largestAsset.name}</p>
-                        <p class="text-xs text-muted-foreground">${Utils.formatCurrency(largestAsset.value)}</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalAssets}</p>
+                        <p class="text-xs text-muted-foreground">Properties & Assets</p>
                     </div>
                 </div>
             `;
@@ -304,37 +250,12 @@ const Assets = {
             const container = document.getElementById('mutualFundsFlipDetails');
             const funds = data.mutualFunds.details;
             const totalFunds = funds.length;
-            const equityFunds = funds.filter(f => f.type === 'Equity').length;
-            const avgReturns = funds.reduce((sum, fund) => {
-                const ret = parseFloat(fund.returns.replace('+', '').replace('%', ''));
-                return sum + ret;
-            }, 0) / totalFunds;
-            const topPerformer = funds.reduce((max, fund) => {
-                const ret = parseFloat(fund.returns.replace('+', '').replace('%', ''));
-                const maxRet = parseFloat(max.returns.replace('+', '').replace('%', ''));
-                return ret > maxRet ? fund : max;
-            }, funds[0]);
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total Funds</p>
-                            <p class="text-lg font-bold">${totalFunds}</p>
-                        </div>
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Avg Returns</p>
-                            <p class="text-sm font-semibold text-green-600">+${avgReturns.toFixed(1)}%</p>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Fund Types</p>
-                        <p class="text-sm font-medium">${equityFunds} Equity • ${totalFunds - equityFunds} Others</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Top Performer</p>
-                        <p class="text-sm font-semibold">${topPerformer.name}</p>
-                        <p class="text-xs text-green-600">${topPerformer.returns}</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalFunds}</p>
+                        <p class="text-xs text-muted-foreground">Mutual Fund Schemes</p>
                     </div>
                 </div>
             `;
@@ -345,37 +266,12 @@ const Assets = {
             const container = document.getElementById('stocksFlipDetails');
             const stocks = data.stocks.details;
             const totalHoldings = stocks.length;
-            const totalQuantity = stocks.reduce((sum, stock) => sum + stock.quantity, 0);
-            const avgReturns = stocks.reduce((sum, stock) => {
-                const ret = parseFloat(stock.returns.replace('+', '').replace('%', ''));
-                return sum + ret;
-            }, 0) / totalHoldings;
-            const topPerformer = stocks.reduce((max, stock) => {
-                const ret = parseFloat(stock.returns.replace('+', '').replace('%', ''));
-                const maxRet = parseFloat(max.returns.replace('+', '').replace('%', ''));
-                return ret > maxRet ? stock : max;
-            }, stocks[0]);
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Total Holdings</p>
-                            <p class="text-lg font-bold">${totalHoldings}</p>
-                        </div>
-                        <div class="p-2 bg-muted rounded text-center">
-                            <p class="text-xs text-muted-foreground mb-1">Avg Returns</p>
-                            <p class="text-sm font-semibold text-green-600">+${avgReturns.toFixed(1)}%</p>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Total Shares</p>
-                        <p class="text-sm font-medium">${totalQuantity.toLocaleString()} shares</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Top Performer</p>
-                        <p class="text-sm font-semibold">${topPerformer.symbol}</p>
-                        <p class="text-xs text-green-600">${topPerformer.returns}</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalHoldings}</p>
+                        <p class="text-xs text-muted-foreground">Stock Holdings</p>
                     </div>
                 </div>
             `;
@@ -384,22 +280,13 @@ const Assets = {
         // Digital Gold
         if (data.digitalGold && data.digitalGold.details) {
             const container = document.getElementById('digitalGoldFlipDetails');
-            const gold = data.digitalGold.details[0];
             const totalGrams = data.digitalGold.details.reduce((sum, g) => sum + g.units, 0);
             
             container.innerHTML = `
-                <div class="space-y-3">
-                    <div class="p-2 bg-muted rounded text-center">
-                        <p class="text-xs text-muted-foreground mb-1">Total Gold</p>
-                        <p class="text-lg font-bold">${totalGrams.toFixed(2)}g</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Platform</p>
-                        <p class="text-sm font-semibold">${gold.platform}</p>
-                    </div>
-                    <div class="p-2 bg-muted rounded">
-                        <p class="text-xs text-muted-foreground mb-1">Current Price</p>
-                        <p class="text-sm font-medium">₹${gold.currentPrice}/gram</p>
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold mb-1">${totalGrams.toFixed(2)}</p>
+                        <p class="text-xs text-muted-foreground">Grams of Gold</p>
                     </div>
                 </div>
             `;
@@ -407,57 +294,96 @@ const Assets = {
     },
 
     updateAssetData(data) {
+        console.log('Updating asset data:', data);
+        
+        if (!data) {
+            console.error('No data provided to updateAssetData');
+            return;
+        }
+        
         let totalAssets = 0;
         let totalLiabilities = 0;
         
         // Update overview cards
         if (data.bankSavings) {
-            document.getElementById('bankSavingsTotal').textContent = Utils.formatCurrency(data.bankSavings.total);
-            document.getElementById('bankAccountsCount').textContent = data.bankSavings.accounts || 0;
+            const totalEl = document.getElementById('bankSavingsTotal');
+            const countEl = document.getElementById('bankAccountsCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.bankSavings.total);
+            if (countEl) countEl.textContent = data.bankSavings.accounts || 0;
             this.renderBankSavingsDetails(data.bankSavings);
-            totalAssets += data.bankSavings.total;
+            totalAssets += data.bankSavings.total || 0;
         }
         
         if (data.loans) {
-            document.getElementById('loansTotal').textContent = Utils.formatCurrency(data.loans.total);
-            document.getElementById('loansCount').textContent = data.loans.count || 0;
+            const totalEl = document.getElementById('loansTotal');
+            const countEl = document.getElementById('loansCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.loans.total);
+            if (countEl) countEl.textContent = data.loans.count || 0;
             this.renderLoansDetails(data.loans);
-            totalLiabilities += data.loans.total;
+            totalLiabilities += data.loans.total || 0;
         }
         
         if (data.assets) {
-            document.getElementById('assetsTotal').textContent = Utils.formatCurrency(data.assets.total);
-            document.getElementById('assetsCount').textContent = data.assets.count || 0;
+            const totalEl = document.getElementById('assetsTotal');
+            const countEl = document.getElementById('assetsCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.assets.total);
+            if (countEl) countEl.textContent = data.assets.count || 0;
             this.renderAssetsDetails(data.assets);
-            totalAssets += data.assets.total;
+            totalAssets += data.assets.total || 0;
         }
         
         if (data.mutualFunds) {
-            document.getElementById('mutualFundsTotal').textContent = Utils.formatCurrency(data.mutualFunds.total);
-            document.getElementById('mutualFundsCount').textContent = data.mutualFunds.count || 0;
+            const totalEl = document.getElementById('mutualFundsTotal');
+            const countEl = document.getElementById('mutualFundsCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.mutualFunds.total);
+            if (countEl) countEl.textContent = data.mutualFunds.count || 0;
             this.renderMutualFundsDetails(data.mutualFunds);
-            totalAssets += data.mutualFunds.total;
+            totalAssets += data.mutualFunds.total || 0;
         }
         
         if (data.stocks) {
-            document.getElementById('stocksTotal').textContent = Utils.formatCurrency(data.stocks.total);
-            document.getElementById('stocksCount').textContent = data.stocks.count || 0;
+            const totalEl = document.getElementById('stocksTotal');
+            const countEl = document.getElementById('stocksCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.stocks.total);
+            if (countEl) countEl.textContent = data.stocks.count || 0;
             this.renderStocksDetails(data.stocks);
-            totalAssets += data.stocks.total;
+            totalAssets += data.stocks.total || 0;
         }
         
         if (data.digitalGold) {
-            document.getElementById('digitalGoldTotal').textContent = Utils.formatCurrency(data.digitalGold.total);
-            document.getElementById('digitalGoldCount').textContent = data.digitalGold.count || 0;
+            const totalEl = document.getElementById('digitalGoldTotal');
+            const countEl = document.getElementById('digitalGoldCount');
+            if (totalEl) totalEl.textContent = Utils.formatCurrency(data.digitalGold.total);
+            if (countEl) countEl.textContent = data.digitalGold.count || 0;
             this.renderDigitalGoldDetails(data.digitalGold);
-            totalAssets += data.digitalGold.total;
+            totalAssets += data.digitalGold.total || 0;
         }
         
         // Update Net Worth Summary
         const netWorth = totalAssets - totalLiabilities;
-        document.getElementById('netWorth').textContent = Utils.formatCurrency(netWorth);
-        document.getElementById('totalAssets').textContent = Utils.formatCurrency(totalAssets);
-        document.getElementById('totalLiabilities').textContent = Utils.formatCurrency(totalLiabilities);
+        console.log('Calculated totals:', { netWorth, totalAssets, totalLiabilities });
+        
+        const netWorthEl = document.getElementById('netWorth');
+        const totalAssetsEl = document.getElementById('totalAssets');
+        const totalLiabilitiesEl = document.getElementById('totalLiabilities');
+        
+        if (netWorthEl) {
+            netWorthEl.textContent = Utils.formatCurrency(netWorth);
+        } else {
+            console.error('netWorth element not found!');
+        }
+        
+        if (totalAssetsEl) {
+            totalAssetsEl.textContent = Utils.formatCurrency(totalAssets);
+        } else {
+            console.error('totalAssets element not found!');
+        }
+        
+        if (totalLiabilitiesEl) {
+            totalLiabilitiesEl.textContent = Utils.formatCurrency(totalLiabilities);
+        } else {
+            console.error('totalLiabilities element not found!');
+        }
 
         // Populate flip card details
         this.populateFlipCardDetails(data);
