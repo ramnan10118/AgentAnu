@@ -54,11 +54,25 @@ const AssetUpload = {
             confirmBtn.dataset.listenerAdded = 'true';
         }
 
-        if (cancelBtn && !cancelBtn.dataset.listenerAdded) {
-            cancelBtn.addEventListener('click', () => {
-                this.cancelAddAsset();
+        if (dismissBtn && !dismissBtn.dataset.listenerAdded) {
+            dismissBtn.addEventListener('click', () => {
+                this.closeBottomSheet();
             });
-            cancelBtn.dataset.listenerAdded = 'true';
+            dismissBtn.dataset.listenerAdded = 'true';
+        }
+
+        if (closeBtn && !closeBtn.dataset.listenerAdded) {
+            closeBtn.addEventListener('click', () => {
+                this.closeBottomSheet();
+            });
+            closeBtn.dataset.listenerAdded = 'true';
+        }
+
+        if (backdrop && !backdrop.dataset.listenerAdded) {
+            backdrop.addEventListener('click', () => {
+                this.closeBottomSheet();
+            });
+            backdrop.dataset.listenerAdded = 'true';
         }
 
         if (editBtn && !editBtn.dataset.listenerAdded) {
@@ -167,15 +181,15 @@ const AssetUpload = {
         console.log('Extracted Value:', assetInfo.value);
         
         this.hideProcessing();
-        const preview = document.getElementById('extractedAssetPreview');
+        
+        // Get bottom sheet elements
         const valueDisplay = document.getElementById('extractedValueDisplay');
         const valueAmount = document.getElementById('extractedValueAmount');
         const valueStatus = document.getElementById('extractedValueStatus');
         const infoContainer = document.getElementById('extractedAssetInfo');
         
-        if (!preview) {
-            console.error('Preview element not found!');
-            alert('Error: Preview section not found. Check console for details.');
+        if (!valueAmount || !infoContainer) {
+            console.error('Bottom sheet elements not found!');
             return;
         }
 
@@ -189,6 +203,16 @@ const AssetUpload = {
         const typeLabel = typeLabels[assetInfo.type] || '📦 Asset';
         const valueFound = assetInfo.value > 0;
         const valueText = valueFound ? Utils.formatCurrency(assetInfo.value) : 'Not Detected';
+        
+        // Update value display styling for bottom sheet
+        if (valueDisplay) {
+            valueDisplay.className = 'px-6 py-4 border-b border-gray-200';
+            if (valueFound) {
+                valueDisplay.classList.add('bg-gradient-to-r', 'from-emerald-50', 'to-green-50');
+            } else {
+                valueDisplay.classList.add('bg-gradient-to-r', 'from-orange-50', 'to-amber-50');
+            }
+        }
 
         // Update the value display
         if (valueAmount) {
@@ -198,31 +222,18 @@ const AssetUpload = {
         if (valueStatus) {
             if (valueFound) {
                 valueStatus.textContent = 'Successfully extracted from document';
-                if (valueDisplay) {
-                    valueDisplay.className = 'bg-gradient-to-r from-emerald-50 to-green-50 border-b border-gray-200 px-8 py-6';
-                    const icon = valueDisplay.querySelector('svg');
-                    if (icon) {
-                        icon.className = 'w-8 h-8 text-green-600';
-                        icon.parentElement.className = 'w-16 h-16 bg-green-100 rounded-full flex items-center justify-center';
-                    }
-                }
             } else {
                 valueStatus.textContent = 'Value not detected - Click Edit to enter manually';
-                if (valueDisplay) {
-                    valueDisplay.className = 'bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-200 px-8 py-6';
-                    const icon = valueDisplay.querySelector('svg');
-                    if (icon) {
-                        icon.className = 'w-8 h-8 text-orange-600';
-                        icon.parentElement.className = 'w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center';
-                        // Change icon to warning
-                        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>';
-                    }
-                }
             }
         }
 
+        // Store asset info for later use
+        this.extractedAsset = assetInfo;
+
         // Update asset details with beautiful cards
         if (infoContainer) {
+            const assetName = assetInfo.name || 'Unnamed Asset';
+            const assetLocation = assetInfo.location || '';
             infoContainer.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Asset Type Card -->
@@ -250,12 +261,12 @@ const AssetUpload = {
                             </div>
                             <div class="flex-1">
                                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Asset Name</p>
-                                <p class="text-base font-semibold text-gray-900">${assetInfo.name}</p>
+                                <p class="text-base font-semibold text-gray-900">${assetName}</p>
                             </div>
                         </div>
                     </div>
 
-                    ${assetInfo.location ? `
+                    ${assetLocation ? `
                     <!-- Location Card -->
                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div class="flex items-center gap-3 mb-2">
@@ -267,7 +278,7 @@ const AssetUpload = {
                             </div>
                             <div class="flex-1">
                                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Location</p>
-                                <p class="text-base font-semibold text-gray-900">${assetInfo.location}</p>
+                                <p class="text-base font-semibold text-gray-900">${assetLocation}</p>
                             </div>
                         </div>
                     </div>
@@ -304,12 +315,45 @@ const AssetUpload = {
             `;
         }
 
-        // Show the preview - THIS IS CRITICAL
-        preview.classList.remove('hidden');
-        console.log('Preview is now visible');
-        
-        // Scroll to the preview
-        preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Show the bottom sheet instead of inline preview
+        this.openBottomSheet();
+    },
+
+    openBottomSheet() {
+        const bottomSheet = document.getElementById('assetBottomSheet');
+        if (bottomSheet) {
+            const content = bottomSheet.querySelector('.relative');
+            if (content) {
+                // Ensure it starts off-screen
+                content.style.transform = 'translateY(100%)';
+            }
+            bottomSheet.classList.remove('hidden');
+            // Prevent body scroll when bottom sheet is open
+            document.body.style.overflow = 'hidden';
+            // Trigger slide-up animation
+            requestAnimationFrame(() => {
+                if (content) {
+                    content.style.transform = 'translateY(0)';
+                }
+            });
+        }
+    },
+
+    closeBottomSheet() {
+        const bottomSheet = document.getElementById('assetBottomSheet');
+        if (bottomSheet) {
+            const content = bottomSheet.querySelector('.relative');
+            if (content) {
+                content.style.transform = 'translateY(100%)';
+            }
+            // Wait for animation before hiding
+            setTimeout(() => {
+                bottomSheet.classList.add('hidden');
+                // Restore body scroll
+                document.body.style.overflow = '';
+                this.resetForm();
+            }, 300);
+        }
     },
 
     showError(message) {
@@ -360,11 +404,11 @@ const AssetUpload = {
             const successMsg = `✓ ${this.extractedAsset.name} (${Utils.formatCurrency(this.extractedAsset.value)}) added to portfolio successfully!`;
             this.showSuccess(successMsg);
             
-            // Reset form after a short delay
+            // Close bottom sheet and reset form after a short delay
             setTimeout(() => {
-                this.resetForm();
+                this.closeBottomSheet();
                 this.isAdding = false;
-            }, 2000);
+            }, 1500);
         } catch (error) {
             console.error('Error adding asset:', error);
             this.isAdding = false;
@@ -389,7 +433,7 @@ const AssetUpload = {
     },
 
     cancelAddAsset() {
-        this.resetForm();
+        this.closeBottomSheet();
     },
 
     resetForm() {
@@ -398,18 +442,16 @@ const AssetUpload = {
         this.isAdding = false;
         
         const fileInput = document.getElementById('assetFileInput');
-        const preview = document.getElementById('extractedAssetPreview');
         const processing = document.getElementById('assetProcessingStatus');
         const errorMsg = document.getElementById('assetErrorMessage');
         const confirmBtn = document.getElementById('confirmAddAssetBtn');
         
         if (fileInput) fileInput.value = '';
-        if (preview) preview.classList.add('hidden');
         if (processing) processing.classList.add('hidden');
         if (errorMsg) errorMsg.classList.add('hidden');
         if (confirmBtn) {
             confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Add to Portfolio';
+            confirmBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Add to Portfolio';
         }
     },
 
@@ -464,7 +506,7 @@ const AssetUpload = {
         // Restore confirm button
         const confirmBtn = document.getElementById('confirmAddAssetBtn');
         if (confirmBtn) {
-            confirmBtn.textContent = 'Add to Portfolio';
+            confirmBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Add to Portfolio';
             confirmBtn.onclick = () => {
                 this.confirmAddAsset();
             };

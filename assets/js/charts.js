@@ -77,33 +77,33 @@ const Charts = {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
-                cutout: '65%',
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                cutout: '70%',
                 plugins: {
                     legend: { display: false },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14, weight: '600' },
-                        bodyFont: { size: 13 },
+                        padding: 8,
+                        titleFont: { size: 12, weight: '600' },
+                        bodyFont: { size: 11 },
                         callbacks: {
                             label: (context) => {
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((value / total) * 100).toFixed(1);
-                                return [`${label}`, `${Utils.formatCurrency(value)}`, `${percentage}% of total`];
+                                return [`${label}`, `${Utils.formatCurrency(value)}`, `${percentage}%`];
                             }
                         },
                         displayColors: true,
-                        boxPadding: 6
+                        boxPadding: 4
                     }
                 },
                 animation: {
                     animateRotate: true,
-                    animateScale: true,
-                    duration: 1000,
-                    easing: 'easeOutQuart'
+                    animateScale: false,
+                    duration: 600
                 },
                 interaction: {
                     intersect: false,
@@ -112,31 +112,25 @@ const Charts = {
             }
         });
 
-        // Render Legend
+        // Render Compact Legend
         const legendContainer = document.getElementById('pieChartLegend');
         const total = values.reduce((a, b) => a + b, 0);
         
-        let legendHtml = '<div class="space-y-3">';
+        let legendHtml = '<div class="space-y-2">';
         labels.forEach((label, index) => {
             const value = distribution[label];
             const percentage = ((value / total) * 100).toFixed(1);
             const color = colors[index];
             
             legendHtml += `
-                <div class="group p-4 bg-muted/50 rounded-lg border border-transparent hover:border-primary/20 hover:bg-muted transition-all cursor-pointer">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full shadow-sm" style="background: linear-gradient(135deg, ${color.bg}, ${color.border})"></div>
-                            <span class="text-sm font-semibold text-foreground">${label}</span>
-                        </div>
-                        <span class="text-sm font-bold">${percentage}%</span>
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background: ${color.bg}"></div>
+                        <span class="text-xs font-medium text-gray-900 truncate">${label}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs text-muted-foreground">Value</p>
-                        <p class="text-sm font-semibold">${Utils.formatCurrency(value)}</p>
-                    </div>
-                    <div class="mt-2 w-full bg-secondary rounded-full h-1.5 overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; background: linear-gradient(90deg, ${color.bg}, ${color.border})"></div>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <span class="text-xs font-semibold text-gray-700">${percentage}%</span>
+                        <span class="text-xs font-semibold text-gray-900">${Utils.formatCurrency(value)}</span>
                     </div>
                 </div>
             `;

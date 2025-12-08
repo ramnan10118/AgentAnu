@@ -23,10 +23,14 @@
     height: 100%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    border-radius: inherit;
 }
 
 .flip-card-back {
     transform: rotateY(180deg);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Sticky Net Worth Card */
@@ -114,5 +118,47 @@ body.has-sticky {
     body.has-sticky {
         padding-top: 65px;
     }
+}
+
+/* Bottom Sheet Styles */
+#assetBottomSheet {
+    pointer-events: none;
+}
+
+#assetBottomSheet:not(.hidden) {
+    pointer-events: auto;
+}
+
+#assetBottomSheet .relative {
+    pointer-events: auto;
+}
+
+/* Collapsible Cards */
+.collapsible-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content > div {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    padding-top: 0;
+}
+
+.collapsible-content.expanded {
+    max-height: 2000px;
+    transition: max-height 0.4s ease-in;
+}
+
+.collapsible-chevron {
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
 }
 
