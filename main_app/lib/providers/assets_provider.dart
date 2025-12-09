@@ -80,7 +80,9 @@ class AssetsNotifier extends StateNotifier<AssetsState> {
   }
 
   Future<bool> getAssets() async {
-    state = state.copyWith(isLoading: true, error: null);
+    // Don't show loading if we already have assets
+    final showLoading = state.assets.isEmpty;
+    state = state.copyWith(isLoading: showLoading, error: null);
     try {
       final response = await _apiService.getAssets();
       if (response['success'] == true) {
