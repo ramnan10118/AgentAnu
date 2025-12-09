@@ -44,6 +44,39 @@ router.post('/designate', authenticate, (req, res) => {
       relationship
     });
 
+    // Broadcast socket notification to ALL connected sockets
+    try {
+      console.log(`📡 [NOK-DESIGNATE] Broadcasting to ALL connected sockets...`);
+      console.log(`📡 [NOK-DESIGNATE] NOK Mobile: ${designation.nokMobile}`);
+      console.log(`📡 [NOK-DESIGNATE] Account Holder: ${designation.accountHolderName}`);
+
+      const io = req.app.get('io');
+
+      const eventData = {
+        designationId: designation.id,
+        accountHolderId: designation.accountHolderId,
+        accountHolderName: designation.accountHolderName,
+        accountHolderMobile: designation.accountHolderMobile,
+        nokMobile: designation.nokMobile,  // Important: Companion app checks this
+        nokName: designation.nokName,
+        relationship: designation.relationship,
+        designatedAt: designation.designatedAt,
+        message: `${designation.accountHolderName} has designated you as their ${designation.relationship}`
+      };
+
+      console.log(`📤 [NOK-DESIGNATE] Broadcasting 'nok:designated' event to ALL sockets`);
+      console.log(`📤 [NOK-DESIGNATE] Event data:`, JSON.stringify(eventData));
+
+      // Broadcast to ALL connected sockets (companion apps will filter)
+      io.emit('nok:designated', eventData);
+
+      console.log(`✅ [NOK-DESIGNATE] Broadcast complete - all companion apps notified`);
+    } catch (error) {
+      console.error('❌ [NOK-DESIGNATE] Failed to broadcast socket event:', error);
+      console.error('❌ [NOK-DESIGNATE] Error stack:', error.stack);
+      // Don't fail the request if socket fails
+    }
+
     res.json({
       success: true,
       message: 'NOK designated successfully',

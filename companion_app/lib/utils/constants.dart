@@ -7,6 +7,8 @@ class AppConstants {
   static const Color successColor = Color(0xFF10B981);
   static const Color errorColor = Color(0xFFEF4444);
   static const Color backgroundColor = Color(0xFFF9FAFB);
+  static const Color textColor = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
   
   // Spacing
   static const double spacingXS = 4.0;

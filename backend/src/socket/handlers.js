@@ -17,9 +17,14 @@ export const setupSocketHandlers = (io) => {
         const { token } = data;
         console.log(`[SOCKET-AUTH] Authentication attempt for socket: ${socket.id}`);
 
+        // Allow anonymous connections (for companion app)
         if (!token) {
-          console.log(`[SOCKET-AUTH] ❌ No token provided`);
-          socket.emit('error', { message: 'Token required for authentication' });
+          console.log(`[SOCKET-AUTH] ℹ️ No token provided - allowing anonymous connection`);
+          socket.emit('authenticated', {
+            success: true,
+            message: 'Connected anonymously'
+          });
+          console.log(`[SOCKET-AUTH] ✅ Anonymous connection allowed for socket ${socket.id}`);
           return;
         }
 
