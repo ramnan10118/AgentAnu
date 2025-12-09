@@ -12,34 +12,81 @@ class AssetLoadingScreen extends ConsumerStatefulWidget {
 }
 
 class _AssetLoadingScreenState extends ConsumerState<AssetLoadingScreen> {
+  bool _hasStartedFetch = false;
+
   @override
   void initState() {
     super.initState();
-    _fetchAssets();
+    // Use longer delay to ensure we're completely outside the build phase
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && !_hasStartedFetch) {
+        _hasStartedFetch = true;
+        _fetchAssets();
+      }
+    });
   }
 
   Future<void> _fetchAssets() async {
+    if (!mounted) return;
+    
     // Simulate minimum loading time for better UX
     await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
     
-    final success = await ref.read(assetsProvider.notifier).fetchAssets();
+    // Ensure we're not in build phase before modifying provider
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     
-    if (mounted) {
-      if (success) {
-        // Navigate to dashboard after successful fetch
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const DashboardScreen(),
+    try {
+      final success = await ref.read(assetsProvider.notifier).fetchAssets();
+      
+      if (mounted) {
+        if (success) {
+          // Verify assets were actually fetched
+          await Future.delayed(const Duration(milliseconds: 100));
+          if (!mounted) return;
+          
+          final assetsState = ref.read(assetsProvider);
+          print('📦 Assets fetched: ${assetsState.assets.length} items');
+          
+          if (assetsState.assets.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No assets found. Please try again.'),
+                backgroundColor: AppConstants.errorColor,
+              ),
+            );
+            return;
+          }
+          
+          // Navigate to dashboard after successful fetch
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DashboardScreen(),
+              ),
+            );
+          }
+        } else {
+          final assetsState = ref.read(assetsProvider);
+          final errorMsg = assetsState.error ?? 'Failed to fetch assets';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg),
+              backgroundColor: AppConstants.errorColor,
+              duration: const Duration(seconds: 5),
             ),
           );
         }
-      } else {
+      }
+    } catch (e) {
+      print('❌ Error fetching assets: $e');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to fetch assets'),
+          SnackBar(
+            content: Text('Error: $e'),
             backgroundColor: AppConstants.errorColor,
           ),
         );

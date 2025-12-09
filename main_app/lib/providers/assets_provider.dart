@@ -40,30 +40,44 @@ class AssetsNotifier extends StateNotifier<AssetsState> {
   AssetsNotifier() : super(AssetsState());
 
   Future<bool> grantConsent() async {
+    // Add a small delay to ensure we're not in build phase
+    await Future.delayed(const Duration(milliseconds: 50));
+    
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _apiService.grantConsent(true);
       if (response['success'] == true) {
+        await Future.delayed(const Duration(milliseconds: 10));
         state = state.copyWith(hasConsented: true, isLoading: false);
         return true;
       }
+      await Future.delayed(const Duration(milliseconds: 10));
       state = state.copyWith(isLoading: false, error: 'Consent failed');
       return false;
     } catch (e) {
+      await Future.delayed(const Duration(milliseconds: 10));
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
 
   Future<bool> fetchAssets() async {
+    // Add a small delay to ensure we're not in build phase
+    await Future.delayed(const Duration(milliseconds: 50));
+    
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _apiService.fetchAssets();
+      print('📦 Fetch Assets Response: $response');
       if (response['success'] == true) {
-        final assetsList = (response['assets'] as List)
+        final assetsList = (response['assets'] as List? ?? [])
             .map((json) => AssetModel.fromJson(json))
             .toList();
-        final netWorth = (response['totalNetWorth'] as num).toDouble();
+        final netWorth = (response['totalNetWorth'] as num?)?.toDouble() ?? 0.0;
+        print('📦 Parsed ${assetsList.length} assets, Net Worth: $netWorth');
+        
+        // Delay state update to ensure we're not in build phase
+        await Future.delayed(const Duration(milliseconds: 10));
         state = state.copyWith(
           assets: assetsList,
           totalNetWorth: netWorth,
@@ -71,23 +85,38 @@ class AssetsNotifier extends StateNotifier<AssetsState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Failed to fetch assets');
+      print('❌ Fetch Assets failed: ${response['message']}');
+      await Future.delayed(const Duration(milliseconds: 10));
+      state = state.copyWith(
+        isLoading: false, 
+        error: response['message'] ?? 'Failed to fetch assets'
+      );
       return false;
     } catch (e) {
+      print('❌ Fetch Assets exception: $e');
+      await Future.delayed(const Duration(milliseconds: 10));
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
 
   Future<bool> getAssets() async {
+    // Add a small delay to ensure we're not in build phase
+    await Future.delayed(const Duration(milliseconds: 50));
+    
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _apiService.getAssets();
+      print('📦 Get Assets Response: $response');
       if (response['success'] == true) {
-        final assetsList = (response['assets'] as List)
+        final assetsList = (response['assets'] as List? ?? [])
             .map((json) => AssetModel.fromJson(json))
             .toList();
-        final netWorth = (response['totalNetWorth'] as num).toDouble();
+        final netWorth = (response['totalNetWorth'] as num?)?.toDouble() ?? 0.0;
+        print('📦 Parsed ${assetsList.length} assets, Net Worth: $netWorth');
+        
+        // Delay state update to ensure we're not in build phase
+        await Future.delayed(const Duration(milliseconds: 10));
         state = state.copyWith(
           assets: assetsList,
           totalNetWorth: netWorth,
@@ -95,9 +124,16 @@ class AssetsNotifier extends StateNotifier<AssetsState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false);
+      print('❌ Get Assets failed: ${response['message']}');
+      await Future.delayed(const Duration(milliseconds: 10));
+      state = state.copyWith(
+        isLoading: false, 
+        error: response['message'] ?? 'Failed to get assets'
+      );
       return false;
     } catch (e) {
+      print('❌ Get Assets exception: $e');
+      await Future.delayed(const Duration(milliseconds: 10));
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }

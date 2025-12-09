@@ -36,7 +36,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final StorageService _storage = StorageService();
 
   AuthNotifier() : super(AuthState()) {
-    _checkAuth();
+    // Delay auth check to avoid modifying state during provider initialization
+    Future.microtask(() {
+      _checkAuth();
+    });
   }
 
   Future<void> _checkAuth() async {
