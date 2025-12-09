@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../utils/shadcn_colors.dart';
 
 enum AssetCategory {
   bankSavings,
@@ -12,12 +13,12 @@ enum AssetCategory {
   other,
 }
 
-class AssetCategoryCard extends StatelessWidget {
+class AssetCategoryCard extends StatefulWidget {
   final AssetCategory category;
   final double amount;
   final int count;
   final String countLabel;
-  final VoidCallback? onTap;
+  final List<dynamic>? assets; // For loan summary on flip
 
   const AssetCategoryCard({
     super.key,
@@ -25,8 +26,15 @@ class AssetCategoryCard extends StatelessWidget {
     required this.amount,
     required this.count,
     required this.countLabel,
-    this.onTap,
+    this.assets,
   });
+
+  @override
+  State<AssetCategoryCard> createState() => _AssetCategoryCardState();
+}
+
+class _AssetCategoryCardState extends State<AssetCategoryCard> {
+  bool _isFlipped = false;
 
   String _formatCurrency(double amount) {
     final formatter = NumberFormat.currency(
@@ -38,7 +46,7 @@ class AssetCategoryCard extends StatelessWidget {
   }
 
   Color get _backgroundColor {
-    switch (category) {
+    switch (widget.category) {
       case AssetCategory.bankSavings:
         return const Color(0xFFDBE4FF);
       case AssetCategory.loans:
@@ -59,7 +67,7 @@ class AssetCategoryCard extends StatelessWidget {
   }
 
   Color get _iconColor {
-    switch (category) {
+    switch (widget.category) {
       case AssetCategory.bankSavings:
         return const Color(0xFF4263EB);
       case AssetCategory.loans:
@@ -80,7 +88,7 @@ class AssetCategoryCard extends StatelessWidget {
   }
 
   IconData get _icon {
-    switch (category) {
+    switch (widget.category) {
       case AssetCategory.bankSavings:
         return Icons.account_balance;
       case AssetCategory.loans:
@@ -101,7 +109,7 @@ class AssetCategoryCard extends StatelessWidget {
   }
 
   String get _title {
-    switch (category) {
+    switch (widget.category) {
       case AssetCategory.bankSavings:
         return 'Bank Savings';
       case AssetCategory.loans:
@@ -121,92 +129,239 @@ class AssetCategoryCard extends StatelessWidget {
     }
   }
 
-  bool get _isLiability => category == AssetCategory.loans;
+  bool get _isLiability => widget.category == AssetCategory.loans;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+      onTap: () => setState(() => _isFlipped = !_isFlipped),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: _isFlipped ? 1.0 : 0.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        builder: (context, value, child) {
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateY(value * 3.14159),
+            child: value < 0.5
+                ? _buildFront()
+                : Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()..rotateY(3.14159),
+                    child: _buildBack(),
+                  ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFront() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child:                       Text(
+                        _title,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: ShadcnColors.mutedForeground,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: _backgroundColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    _icon,
+                    size: 11,
+                    color: _iconColor,
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _formatCurrency(widget.amount),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: _isLiability ? ShadcnColors.destructive : ShadcnColors.foreground,
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  '${widget.count} ${widget.countLabel}',
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: ShadcnColors.mutedForeground,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        child: Stack(
+      ),
+    );
+  }
+
+  Widget _buildBack() {
+    if (widget.category == AssetCategory.loans && widget.assets != null && widget.assets!.isNotEmpty) {
+      return _buildLoanSummary();
+    }
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: ShadcnColors.card,
+        borderRadius: BorderRadius.circular(ShadcnColors.radius),
+        border: Border.all(color: ShadcnColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Decorative circle
-            Positioned(
-              top: -16,
-              right: -16,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _backgroundColor.withOpacity(0.5),
-                ),
+            Text(
+              _title,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: ShadcnColors.foreground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${widget.count}',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: _iconColor,
               ),
             ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _title,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          _icon,
-                          size: 18,
-                          color: _iconColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  // Amount
-                  Text(
-                    _formatCurrency(amount),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _isLiability ? const Color(0xFFFA5252) : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // Count
-                  Text(
-                    '$count $countLabel',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
+            Text(
+              widget.countLabel,
+              style: const TextStyle(
+                fontSize: 9,
+                color: ShadcnColors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoanSummary() {
+    final loans = widget.assets!;
+    final totalEMI = loans.fold<double>(0.0, (sum, loan) {
+      final emi = (loan.details['emi'] as num?)?.toDouble() ?? 0.0;
+      return sum + emi;
+    });
+    
+    final avgRemainingMonths = loans.isEmpty ? 0 : (loans.fold<int>(0, (sum, loan) {
+      final months = (loan.details['remainingMonths'] as num?)?.toInt() ?? 0;
+      return sum + months;
+    }) / loans.length).round();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: ShadcnColors.card,
+        borderRadius: BorderRadius.circular(ShadcnColors.radius),
+        border: Border.all(color: ShadcnColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _title,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: ShadcnColors.foreground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${loans.length}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: ShadcnColors.destructive,
+              ),
+            ),
+            const Text(
+              'loans',
+              style: TextStyle(
+                fontSize: 9,
+                color: ShadcnColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '₹${totalEMI.toStringAsFixed(0).replaceAllMapped(
+                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (Match m) => '${m[1]},',
+              )}/mo',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: ShadcnColors.mutedForeground,
+              ),
+            ),
+            Text(
+              '$avgRemainingMonths months left',
+              style: const TextStyle(
+                fontSize: 9,
+                color: ShadcnColors.mutedForeground,
               ),
             ),
           ],

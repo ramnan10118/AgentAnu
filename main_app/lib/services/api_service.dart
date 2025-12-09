@@ -166,5 +166,47 @@ class ApiService {
     final response = await _dio.get('${ApiConfig.deathClaimsGuidance}/$assetType');
     return response.data as Map<String, dynamic>;
   }
+
+  // OCR endpoints
+  Future<Map<String, dynamic>> extractAssetFromBytes(
+    List<int> fileBytes,
+    String fileName,
+  ) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(
+        fileBytes,
+        filename: fileName,
+      ),
+    });
+    // Don't set Content-Type manually - Dio will set it with boundary for multipart
+    // The interceptor will add Authorization header automatically
+    final response = await _dio.post(
+      '/ocr/extract-asset',
+      data: formData,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  // Manual asset endpoints
+  Future<Map<String, dynamic>> addManualAsset({
+    required String type,
+    required String name,
+    String? location,
+    required double value,
+    String? provider,
+    String? accountNumber,
+    Map<String, dynamic>? details,
+  }) async {
+    final response = await _dio.post('/assets/manual', data: {
+      'type': type,
+      'name': name,
+      'location': location,
+      'value': value,
+      'provider': provider ?? name,
+      'accountNumber': accountNumber,
+      'details': details ?? {},
+    });
+    return response.data as Map<String, dynamic>;
+  }
 }
 
