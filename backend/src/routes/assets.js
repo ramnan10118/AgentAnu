@@ -2,6 +2,7 @@ import express from 'express';
 import db from '../models/index.js';
 import { fetchAssets, getAssetStats } from '../services/mockAnumati.js';
 import { authenticate } from '../middleware/auth.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
@@ -110,6 +111,64 @@ router.get('/', authenticate, (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get assets'
+    });
+  }
+});
+
+/**
+ * POST /api/assets/manual
+ * Add a manually uploaded asset to user's portfolio
+ */
+router.post('/manual', authenticate, (req, res) => {
+  try {
+    const { type, name, location, value, provider, accountNumber, details } = req.body;
+
+    if (!type || !name || value === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Type, name, and value are required'
+      });
+    }
+
+    // Create new asset
+    const newAsset = {
+      id: uuidv4(),
+      userId: req.user.id,
+      type: type === 'Property' ? 'property' : type === 'Land' ? 'real_estate' : type === 'Vehicle' ? 'vehicle' : 'other',
+      provider: provider || name,
+      accountNumber: accountNumber || 'N/A',
+      value: parseFloat(value),
+      currency: 'INR',
+      details: {
+        ...details,
+        location: location,
+        name: name,
+        source: 'manual_upload',
+      },
+      source: 'manual_upload',
+      asOf: new Date().toISOString(),
+      isRevealed: false,
+    };
+
+    // Add asset to user's portfolio
+    const currentAssets = db.getAssets(req.user.id);
+    const updatedAssets = [...currentAssets, newAsset];
+    db.setAssets(req.user.id, updatedAssets);
+
+    const totalNetWorth = updatedAssets.reduce((sum, asset) => sum + asset.value, 0);
+
+    res.json({
+      success: true,
+      message: 'Asset added successfully',
+      asset: newAsset,
+      totalNetWorth,
+      stats: getAssetStats(updatedAssets)
+    });
+  } catch (error) {
+    console.error('Add manual asset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add asset'
     });
   }
 });

@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.js';
 import assetsRoutes from './routes/assets.js';
 import nokRoutes from './routes/nok.js';
 import deathRoutes from './routes/death.js';
+import ocrRoutes from './routes/ocr.js';
 
 // Socket handlers
 import { setupSocketHandlers } from './socket/handlers.js';
@@ -28,7 +29,12 @@ const io = new Server(httpServer, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' })); // Increased limit for base64 death certificates
 app.use(express.urlencoded({ extended: true }));
 
@@ -52,6 +58,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/nok', nokRoutes);
 app.use('/api/death', deathRoutes);
+app.use('/api/ocr', ocrRoutes);
 
 // Root route
 app.get('/', (req, res) => {

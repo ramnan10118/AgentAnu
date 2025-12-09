@@ -1,0 +1,180 @@
+/* Flip Card Styles */
+.flip-card {
+    perspective: 1000px;
+    cursor: pointer;
+    min-height: 160px;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.flip-card-back {
+    transform: rotateY(180deg);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Sticky Net Worth Card */
+.net-worth-wrapper {
+    position: relative;
+    z-index: 10;
+}
+
+.net-worth-card {
+    transition: all 0.3s ease;
+    will-change: transform, position;
+}
+
+.net-worth-card.sticky {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 9999 !important;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-top: 0 !important;
+    padding: 0.75rem 1.5rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    backdrop-filter: blur(10px);
+    background: hsl(var(--primary)) !important;
+    margin: 0 !important;
+    transform: translateX(0) !important;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.net-worth-card.sticky .net-worth-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.net-worth-card.sticky .net-worth-header {
+    display: none;
+}
+
+.net-worth-card.sticky .absolute {
+    display: none;
+}
+
+.net-worth-card.sticky .net-worth-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.net-worth-card.sticky .net-worth-item {
+    text-align: center;
+}
+
+.net-worth-card.sticky .net-worth-item .net-worth-label {
+    font-size: 0.65rem;
+    margin-bottom: 0.25rem;
+    opacity: 0.85;
+}
+
+.net-worth-card.sticky .net-worth-item .net-worth-value {
+    font-size: 1.25rem;
+    line-height: 1.2;
+}
+
+.net-worth-card.sticky .net-worth-item .net-worth-subtext {
+    font-size: 0.6rem;
+    margin-top: 0.25rem;
+    opacity: 0.7;
+}
+
+body.has-sticky {
+    padding-top: 70px;
+}
+
+@media (max-width: 768px) {
+    .net-worth-card.sticky .net-worth-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .net-worth-card.sticky .net-worth-item .net-worth-value {
+        font-size: 1rem;
+    }
+
+    .net-worth-card.sticky {
+        padding: 0.75rem 1rem;
+    }
+
+    body.has-sticky {
+        padding-top: 65px;
+    }
+}
+
+/* Bottom Sheet Styles */
+#assetBottomSheet {
+    pointer-events: none;
+}
+
+#assetBottomSheet:not(.hidden) {
+    pointer-events: auto;
+}
+
+#assetBottomSheet .relative {
+    pointer-events: auto;
+}
+
+/* Collapsible Cards */
+.collapsible-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content > div {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    padding-top: 0;
+}
+
+.collapsible-content.expanded {
+    max-height: 2000px;
+    transition: max-height 0.4s ease-in;
+}
+
+.collapsible-chevron {
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
+}
+

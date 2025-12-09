@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wealth Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+    <div class="min-h-screen bg-background">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <!-- Header -->
+            <div class="mb-8 text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 relative">
+                    <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight mb-2">Your Digital Vault</h1>
+                <p class="text-muted-foreground text-base max-w-2xl mx-auto">A secure, comprehensive snapshot of your legacy - everything your family needs to know about your wealth, assets, and important documents</p>
+            </div>
+
+            <!-- Net Worth Summary -->
+            <div class="net-worth-wrapper mb-8">
+                <div id="netWorthCard" class="net-worth-card bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl border shadow-xl p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                    <div class="relative net-worth-content">
+                        <div class="net-worth-header flex items-center gap-2 mb-6">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-sm font-medium opacity-90">Your Legacy Value</p>
+                        </div>
+                        <div class="net-worth-grid grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Net Worth</p>
+                                <p class="text-4xl font-bold mb-1 net-worth-value" id="netWorth">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">What you're leaving behind</p>
+                            </div>
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Assets</p>
+                                <p class="text-3xl font-semibold mb-1 net-worth-value" id="totalAssets">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">All your investments & savings</p>
+                            </div>
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Liabilities</p>
+                                <p class="text-3xl font-semibold mb-1 net-worth-value" id="totalLiabilities">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">Outstanding loans & debts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assets Overview Section -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h2 class="text-lg font-semibold">Assets Overview</h2>
+                    </div>
+                    <div class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        Just now
+                    </div>
+                </div>
+
+                <!-- Asset Distribution Pie Chart - Compact -->
+                <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-4 mb-4">
+                    <h3 class="text-sm font-semibold mb-3">Asset Distribution</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        <div class="flex justify-center">
+                            <div class="relative w-full max-w-[180px]">
+                                <canvas id="assetPieChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="space-y-2" id="pieChartLegend"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+                    <!-- Bank Savings -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="bankSavings">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-blue-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Bank Savings</h3>
+                                        <div class="p-1.5 bg-blue-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold" id="bankSavingsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="bankAccountsCount">0</span> accounts</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Bank Savings</h3>
+                                    </div>
+                                    <div id="bankSavingsFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loans -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="loans">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-red-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Loans</h3>
+                                        <div class="p-1.5 bg-red-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold text-destructive" id="loansTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="loansCount">0</span> loans</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Loans</h3>
+                                    </div>
+                                    <div id="loansFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assets Acquired -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="assets">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-green-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Assets</h3>
+                                        <div class="p-1.5 bg-green-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold" id="assetsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="assetsCount">0</span> assets</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Assets</h3>
+                                    </div>
+                                    <div id="assetsFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mutual Funds -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="mutualFunds">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-purple-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Mutual Funds</h3>
+                                        <div class="p-1.5 bg-purple-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold" id="mutualFundsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="mutualFundsCount">0</span> funds</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Mutual Funds</h3>
+                                    </div>
+                                    <div id="mutualFundsFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stocks -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="stocks">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-orange-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Stocks</h3>
+                                        <div class="p-1.5 bg-orange-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold" id="stocksTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="stocksCount">0</span> holdings</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Stocks</h3>
+                                    </div>
+                                    <div id="stocksFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Gold -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="digitalGold">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-yellow-100 rounded-full -mr-8 -mt-8 opacity-20"></div>
+                                <div class="relative p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-xs font-medium text-muted-foreground">Digital Gold</h3>
+                                        <div class="p-1.5 bg-yellow-100 rounded-lg">
+                                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-bold" id="digitalGoldTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5"><span id="digitalGoldCount">0</span> units</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-4 h-full flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                        <h3 class="text-xs font-semibold">Digital Gold</h3>
+                                    </div>
+                                    <div id="digitalGoldFlipDetails" class="flex-1 text-xs space-y-1.5 text-muted-foreground overflow-y-auto min-h-0">
+                                        <p>Loading details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Planning Info -->
+            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 mt-1">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-blue-900 mb-2">Your Legacy Plan</h3>
+                        <p class="text-sm text-blue-800 mb-3">Give your family peace of mind. When you're gone, your beneficiaries get instant, secure access to everything—accounts, assets, documents. No searching. No confusion. Just a clear path forward.</p>
+                        <div class="flex items-center gap-4 text-xs text-blue-700">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                <span>Encrypted & Secure</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>Beneficiary Access</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Asset Sections -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold">Detailed Asset Breakdown</h2>
+                </div>
+                <div class="space-y-3">
+                    <!-- Bank Savings Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="bankSavingsCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Bank Savings</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="bankSavingsCollapse" class="collapsible-content">
+                            <div>
+                                <div id="bankSavingsDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your bank accounts via Account Aggregator to view your savings details.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loans Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="loansCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-red-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Loans</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="loansCollapse" class="collapsible-content">
+                            <div>
+                                <div id="loansDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your loan accounts via Account Aggregator to view your loan details.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assets Acquired Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="assetsCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Assets Acquired</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="assetsCollapse" class="collapsible-content">
+                            <div>
+                                <div id="assetsDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your asset accounts via Account Aggregator to view your acquired assets.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mutual Funds Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="mutualFundsCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-purple-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Mutual Funds</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="mutualFundsCollapse" class="collapsible-content">
+                            <div>
+                                <div id="mutualFundsDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your mutual fund accounts via Account Aggregator to view your investments.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stocks Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="stocksCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-orange-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Stocks</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="stocksCollapse" class="collapsible-content">
+                            <div>
+                                <div id="stocksDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your demat accounts via Account Aggregator to view your stock holdings.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Gold Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden">
+                        <button type="button" class="collapsible-header w-full flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors" data-target="digitalGoldCollapse">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-yellow-100 rounded-lg">
+                                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold">Digital Gold</h3>
+                            </div>
+                            <svg class="w-5 h-5 text-muted-foreground transition-transform collapsible-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="digitalGoldCollapse" class="collapsible-content">
+                            <div>
+                                <div id="digitalGoldDetails" class="text-sm text-muted-foreground">
+                                    <p>Connect your digital gold accounts via Account Aggregator to view your gold savings.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Asset Section -->
+            <div class="mb-12">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-primary/10 rounded-lg">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold">Add Asset from Document</h2>
+                            <p class="text-sm text-muted-foreground mt-1">Upload and automatically extract asset details</p>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-900">
+                            <strong>📄 Upload property documents, vehicle registrations, or land deeds.</strong> 
+                            Our AI-powered OCR will automatically read and extract the asset value, location, and other key details.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Add Asset Upload Card -->
+                <div id="addAssetCard" class="bg-white rounded-lg border mb-6">
+                    <div class="p-6">
+                        <div 
+                            id="addAssetUploadArea" 
+                            class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer transition-colors hover:border-gray-400 hover:bg-gray-50"
+                        >
+                            <div class="flex flex-col items-center justify-center space-y-4">
+                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Click to upload or drag and drop</p>
+                                    <p class="text-xs text-gray-500 mt-1">PNG, JPEG, or PDF files</p>
+                                </div>
+                            </div>
+                            <input type="file" id="assetFileInput" accept=".png,.jpeg,.jpg,.pdf" class="hidden">
+                        </div>
+
+                        <!-- Processing Status -->
+                        <div id="assetProcessingStatus" class="hidden mt-6">
+                            <div class="bg-white rounded-lg border p-6">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
+                                    <div class="flex-1">
+                                        <p id="processingStatusText" class="text-sm font-medium text-gray-900">Processing document...</p>
+                                        <p id="processingSubtext" class="text-xs text-gray-500 mt-1">Reading document content</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                    <div id="processingProgressBar" class="bg-gray-900 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <p id="processingPercent" class="text-xs text-gray-500 mt-2 text-right">0%</p>
+                            </div>
+                        </div>
+
+                        <!-- Extracted Asset Preview - Hidden, will be shown in bottom sheet -->
+                        <div id="extractedAssetPreview" class="hidden">
+                            <!-- This content will be moved to bottom sheet -->
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="assetErrorMessage" class="hidden mt-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold">Secure Document Vault</h2>
+                </div>
+                <p class="text-sm text-muted-foreground mb-2">Store and organize critical documents that your family will need. Property deeds, insurance policies, identity documents, and other important papers - all in one secure, accessible location for your next of kin.</p>
+                <p class="text-xs text-muted-foreground mb-4">Add important identification and reference documents that your family might need later - Aadhaar, PAN, property registration papers, insurance certificates, and other essential documents.</p>
+
+                <!-- Upload Card - Large State (when no documents) -->
+                <div id="uploadCard" class="bg-card text-card-foreground rounded-lg border shadow-sm mb-6">
+                    <div class="p-6">
+                        <div 
+                            id="uploadArea" 
+                            class="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors hover:bg-accent/50 hover:border-primary/50"
+                        >
+                            <div class="flex flex-col items-center justify-center space-y-4">
+                                <svg class="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium">Click to upload or drag and drop</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Supports PNG, JPEG, and PDF files (Max 5 documents)</p>
+                                </div>
+                            </div>
+                            <input type="file" id="fileInput" accept=".png,.jpeg,.jpg,.pdf" multiple class="hidden">
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="errorMessage" class="hidden mt-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20"></div>
+                    </div>
+                </div>
+
+                <!-- Upload More Button - Small State (when documents exist) -->
+                <div id="uploadMoreButton" class="hidden mb-4">
+                    <button 
+                        id="uploadMoreBtn"
+                        class="w-full bg-card text-card-foreground rounded-lg border shadow-sm p-4 hover:bg-accent/50 transition-colors text-left flex items-center justify-between group"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Upload more documents</p>
+                                <p class="text-xs text-muted-foreground">Add up to 5 documents total</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <input type="file" id="fileInputSmall" accept=".png,.jpeg,.jpg,.pdf" multiple class="hidden">
+                </div>
+
+                <!-- Documents List -->
+                <div id="documentsList" class="space-y-3">
+                    <!-- Documents will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet for Extracted Asset -->
+    <div id="assetBottomSheet" class="fixed inset-x-0 bottom-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div id="bottomSheetBackdrop" class="fixed inset-0 bg-black/50 transition-opacity"></div>
+        
+        <!-- Bottom Sheet Content -->
+        <div class="relative bg-white rounded-t-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transform translate-y-full transition-transform duration-300 ease-out">
+            <!-- Drag Handle -->
+            <div class="flex justify-center pt-3 pb-2">
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            <!-- Header -->
+            <div id="extractedValueDisplay" class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Extracted Asset Value</span>
+                        </div>
+                        <p id="extractedValueAmount" class="text-3xl font-bold text-gray-900">--</p>
+                        <p id="extractedValueStatus" class="text-sm text-gray-500 mt-0.5">Processing...</p>
+                    </div>
+                    <button id="closeBottomSheet" class="ml-4 p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-gray-900 mb-0.5">Asset Information</h4>
+                            <p class="text-xs text-gray-500">Review the extracted details</p>
+                        </div>
+                        <button id="editAssetBtn" class="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Edit
+                        </button>
+                    </div>
+                    
+                    <div id="extractedAssetInfo" class="space-y-3 mb-6">
+                        <!-- Asset info will be displayed here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons (Fixed at bottom) -->
+            <div class="border-t border-gray-200 bg-white p-4 flex gap-3">
+                <button id="dismissBottomSheet" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm text-gray-700">
+                    Dismiss
+                </button>
+                <button id="confirmAddAssetBtn" class="flex-1 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-sm flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add to Portfolio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/charts.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/assets.js"></script>
+    <script src="assets/js/assetExtractor.js"></script>
+    <script src="assets/js/assetManager.js"></script>
+    <script src="assets/js/assetUpload.js"></script>
+    <script src="assets/js/documents.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+    <!-- Fallback initialization - ensures data loads even if main.js fails -->
+    <script>
+        // Fallback: Try to load data after a short delay if main initialization didn't work
+        setTimeout(function() {
+            if (typeof Assets !== 'undefined' && typeof AssetManager !== 'undefined') {
+                const netWorthEl = document.getElementById('netWorth');
+                if (netWorthEl && netWorthEl.textContent === '--') {
+                    console.log('Fallback: Re-initializing data...');
+                    try {
+                        if (!AssetManager.assetData) {
+                            AssetManager.init();
+                        }
+                        const data = AssetManager.getAssetData();
+                        if (data) {
+                            Assets.updateAssetData(data);
+                        }
+                    } catch (e) {
+                        console.error('Fallback initialization error:', e);
+                    }
+                }
+            }
+            
+            // Ensure flip cards, collapsible cards, and sticky are set up
+            if (typeof Components !== 'undefined') {
+                Components.setupFlipCards();
+                Components.setupCollapsibleCards();
+                Components.setupStickyNetWorth();
+            }
+        }, 500);
+    </script>
+</body>
+</html>
+

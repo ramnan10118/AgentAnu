@@ -1,1 +1,1933 @@
-<title>hello world</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wealth Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            perspective: 1000px;
+            cursor: pointer;
+            min-height: 160px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Sticky Net Worth Card */
+        .net-worth-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+
+        .net-worth-card {
+            transition: all 0.3s ease;
+        }
+
+        .net-worth-card.sticky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            border-radius: 0;
+            border-left: 0;
+            border-right: 0;
+            border-top: 0;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+        }
+
+        .net-worth-card.sticky .net-worth-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .net-worth-card.sticky .net-worth-header {
+            display: none;
+        }
+
+        .net-worth-card.sticky .absolute {
+            display: none;
+        }
+
+        .net-worth-card.sticky .net-worth-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .net-worth-card.sticky .net-worth-item {
+            text-align: center;
+        }
+
+        .net-worth-card.sticky .net-worth-item .net-worth-label {
+            font-size: 0.65rem;
+            margin-bottom: 0.25rem;
+            opacity: 0.85;
+        }
+
+        .net-worth-card.sticky .net-worth-item .net-worth-value {
+            font-size: 1.25rem;
+            line-height: 1.2;
+        }
+
+        .net-worth-card.sticky .net-worth-item .net-worth-subtext {
+            font-size: 0.6rem;
+            margin-top: 0.25rem;
+            opacity: 0.7;
+        }
+
+        body.has-sticky {
+            padding-top: 70px;
+        }
+
+        @media (max-width: 768px) {
+            .net-worth-card.sticky .net-worth-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .net-worth-card.sticky .net-worth-item .net-worth-value {
+                font-size: 1rem;
+            }
+
+            .net-worth-card.sticky {
+                padding: 0.75rem 1rem;
+            }
+
+            body.has-sticky {
+                padding-top: 65px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground antialiased">
+    <div class="min-h-screen bg-background">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <!-- Header -->
+            <div class="mb-8 text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 relative">
+                    <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight mb-2">Your Digital Vault</h1>
+                <p class="text-muted-foreground text-base max-w-2xl mx-auto">A secure, comprehensive snapshot of your legacy - everything your family needs to know about your wealth, assets, and important documents</p>
+            </div>
+
+            <!-- Net Worth Summary -->
+            <div class="net-worth-wrapper mb-8">
+                <div id="netWorthCard" class="net-worth-card bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl border shadow-xl p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                    <div class="relative net-worth-content">
+                        <div class="net-worth-header flex items-center gap-2 mb-6">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-sm font-medium opacity-90">Your Legacy Value</p>
+                        </div>
+                        <div class="net-worth-grid grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Net Worth</p>
+                                <p class="text-4xl font-bold mb-1 net-worth-value" id="netWorth">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">What you're leaving behind</p>
+                            </div>
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Assets</p>
+                                <p class="text-3xl font-semibold mb-1 net-worth-value" id="totalAssets">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">All your investments & savings</p>
+                            </div>
+                            <div class="net-worth-item">
+                                <p class="text-xs opacity-75 mb-2 net-worth-label">Total Liabilities</p>
+                                <p class="text-3xl font-semibold mb-1 net-worth-value" id="totalLiabilities">--</p>
+                                <p class="text-xs opacity-70 net-worth-subtext">Outstanding loans & debts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assets Overview Section -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h2 class="text-xl font-semibold">Assets Overview</h2>
+                    </div>
+                    <div class="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                        Last synced: Just now
+                    </div>
+                </div>
+
+                <!-- Asset Distribution Pie Chart -->
+                <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-8 mb-6">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-1">Asset Distribution</h3>
+                        <p class="text-sm text-muted-foreground">Breakdown of your total assets by category</p>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="flex justify-center">
+                            <div class="relative w-full max-w-sm">
+                                <canvas id="assetPieChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="space-y-3" id="pieChartLegend"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <!-- Bank Savings -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="bankSavings">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Bank Savings</h3>
+                                        <div class="p-2 bg-blue-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold" id="bankSavingsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Connected accounts: <span id="bankAccountsCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Bank Savings Details</h3>
+                                        <div class="p-2 bg-blue-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="bankSavingsFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loans -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="loans">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-red-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Loans</h3>
+                                        <div class="p-2 bg-red-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold text-destructive" id="loansTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Active loans: <span id="loansCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Loan Details</h3>
+                                        <div class="p-2 bg-red-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="loansFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assets Acquired -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="assets">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-green-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Assets Acquired</h3>
+                                        <div class="p-2 bg-green-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold" id="assetsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Total assets: <span id="assetsCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Assets Details</h3>
+                                        <div class="p-2 bg-green-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="assetsFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mutual Funds -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="mutualFunds">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-purple-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Mutual Funds</h3>
+                                        <div class="p-2 bg-purple-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold" id="mutualFundsTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Funds: <span id="mutualFundsCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Mutual Funds</h3>
+                                        <div class="p-2 bg-purple-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="mutualFundsFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stocks -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="stocks">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-orange-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Stocks</h3>
+                                        <div class="p-2 bg-orange-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold" id="stocksTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Holdings: <span id="stocksCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Stock Holdings</h3>
+                                        <div class="p-2 bg-orange-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="stocksFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Gold -->
+                    <div class="flip-card bg-card text-card-foreground rounded-lg border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow" data-card="digitalGold">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-100 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div class="relative p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-sm font-medium text-muted-foreground">Digital Gold</h3>
+                                        <div class="p-2 bg-yellow-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold" id="digitalGoldTotal">--</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Gold units: <span id="digitalGoldCount">0</span></p>
+                                    <p class="text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Tap to see details</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="p-6 h-full flex flex-col">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-sm font-semibold">Digital Gold</h3>
+                                        <div class="p-2 bg-yellow-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div id="digitalGoldFlipDetails" class="flex-1 text-xs space-y-2 text-muted-foreground">
+                                        <p>Loading details...</p>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-4 text-center">Tap to flip back</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Planning Info -->
+            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 mt-1">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-blue-900 mb-2">Your Legacy Plan</h3>
+                        <p class="text-sm text-blue-800 mb-3">This vault contains a complete record of your financial life. In the event of your passing, your designated beneficiaries will have secure access to all this information, ensuring a smooth transition of your assets and helping your family understand your complete financial picture.</p>
+                        <div class="flex items-center gap-4 text-xs text-blue-700">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                <span>Encrypted & Secure</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>Beneficiary Access</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Asset Sections (Placeholders for Account Aggregator data) -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold">Detailed Asset Breakdown</h2>
+                </div>
+                <div class="space-y-4">
+                    <!-- Bank Savings Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Bank Savings</h3>
+                        </div>
+                        <div id="bankSavingsDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your bank accounts via Account Aggregator to view your savings details.</p>
+                        </div>
+                    </div>
+
+                    <!-- Loans Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Loans</h3>
+                        </div>
+                        <div id="loansDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your loan accounts via Account Aggregator to view your loan details.</p>
+                        </div>
+                    </div>
+
+                    <!-- Assets Acquired Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Assets Acquired</h3>
+                        </div>
+                        <div id="assetsDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your asset accounts via Account Aggregator to view your acquired assets.</p>
+                        </div>
+                    </div>
+
+                    <!-- Mutual Funds Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Mutual Funds</h3>
+                        </div>
+                        <div id="mutualFundsDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your mutual fund accounts via Account Aggregator to view your investments.</p>
+                        </div>
+                    </div>
+
+                    <!-- Stocks Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-orange-100 rounded-lg">
+                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Stocks</h3>
+                        </div>
+                        <div id="stocksDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your demat accounts via Account Aggregator to view your stock holdings.</p>
+                        </div>
+                    </div>
+
+                    <!-- Digital Gold Details -->
+                    <div class="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold">Digital Gold</h3>
+                        </div>
+                        <div id="digitalGoldDetails" class="text-sm text-muted-foreground">
+                            <p>Connect your digital gold accounts via Account Aggregator to view your gold savings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold">Secure Document Vault</h2>
+                </div>
+                <p class="text-sm text-muted-foreground mb-2">Store and organize critical documents that your family will need. Property deeds, insurance policies, identity documents, and other important papers - all in one secure, accessible location for your next of kin.</p>
+                <p class="text-xs text-muted-foreground mb-4">Add important identification and reference documents that your family might need later - Aadhaar, PAN, property registration papers, insurance certificates, and other essential documents.</p>
+
+                <!-- Upload Card - Large State (when no documents) -->
+                <div id="uploadCard" class="bg-card text-card-foreground rounded-lg border shadow-sm mb-6">
+                    <div class="p-6">
+                        <div 
+                            id="uploadArea" 
+                            class="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors hover:bg-accent/50 hover:border-primary/50"
+                        >
+                            <div class="flex flex-col items-center justify-center space-y-4">
+                                <svg class="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium">Click to upload or drag and drop</p>
+                                    <p class="text-xs text-muted-foreground mt-1">Supports PNG, JPEG, and PDF files (Max 5 documents)</p>
+                                </div>
+                            </div>
+                            <input type="file" id="fileInput" accept=".png,.jpeg,.jpg,.pdf" multiple class="hidden">
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="errorMessage" class="hidden mt-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20"></div>
+                    </div>
+                </div>
+
+                <!-- Upload More Button - Small State (when documents exist) -->
+                <div id="uploadMoreButton" class="hidden mb-4">
+                    <button 
+                        id="uploadMoreBtn"
+                        class="w-full bg-card text-card-foreground rounded-lg border shadow-sm p-4 hover:bg-accent/50 transition-colors text-left flex items-center justify-between group"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Upload more documents</p>
+                                <p class="text-xs text-muted-foreground">Add up to 5 documents total</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <input type="file" id="fileInputSmall" accept=".png,.jpeg,.jpg,.pdf" multiple class="hidden">
+                </div>
+
+                <!-- Documents List -->
+                <div id="documentsList" class="space-y-3">
+                    <!-- Documents will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <!-- PDF.js for PDF rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Chart.js for Pie Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInputSmall = document.getElementById('fileInputSmall');
+        const errorMessage = document.getElementById('errorMessage');
+        const documentsList = document.getElementById('documentsList');
+        const uploadCard = document.getElementById('uploadCard');
+        const uploadMoreButton = document.getElementById('uploadMoreButton');
+        const uploadMoreBtn = document.getElementById('uploadMoreBtn');
+
+        let documents = [];
+        const MAX_DOCUMENTS = 5;
+
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => {
+            if (documents.length < MAX_DOCUMENTS) {
+                fileInput.click();
+            }
+        });
+
+        // Upload more button click
+        uploadMoreBtn.addEventListener('click', () => {
+            if (documents.length < MAX_DOCUMENTS) {
+                fileInputSmall.click();
+            }
+        });
+
+        // File input small change
+        fileInputSmall.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+            }
+        });
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (documents.length < MAX_DOCUMENTS) {
+                uploadArea.classList.add('bg-accent', 'border-primary');
+            }
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('bg-accent', 'border-primary');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('bg-accent', 'border-primary');
+            if (documents.length < MAX_DOCUMENTS) {
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+            }
+        });
+
+        function handleFiles(files) {
+            const remainingSlots = MAX_DOCUMENTS - documents.length;
+            const filesToAdd = files.slice(0, remainingSlots);
+
+            if (files.length > remainingSlots) {
+                showError(`You can only upload ${remainingSlots} more document(s). Maximum ${MAX_DOCUMENTS} documents allowed.`);
+            }
+
+            filesToAdd.forEach(file => {
+                if (documents.length >= MAX_DOCUMENTS) return;
+
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+                if (!validTypes.includes(file.type)) {
+                    showError(`${file.name} is not a valid file type. Please upload PNG, JPEG, or PDF files.`);
+                    return;
+                }
+
+                addDocument(file);
+            });
+
+            // Reset file inputs
+            fileInput.value = '';
+            fileInputSmall.value = '';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        async function addDocument(file) {
+            const documentId = Date.now().toString();
+            const document = {
+                id: documentId,
+                file: file,
+                name: file.name,
+                type: file.type,
+                uploadDate: new Date(),
+                isProcessing: true
+            };
+
+            documents.push(document);
+            renderDocuments();
+
+            // Process document (OCR for type detection)
+            try {
+                const documentType = await identifyDocumentType(file);
+                document.name = documentType;
+                document.isProcessing = false;
+                renderDocuments();
+            } catch (error) {
+                console.error('Error processing document:', error);
+                document.name = file.name;
+                document.isProcessing = false;
+                renderDocuments();
+            }
+        }
+
+        async function identifyDocumentType(file) {
+            try {
+                let imageDataUrl = null;
+
+                // Handle PDF files
+                if (file.type === 'application/pdf') {
+                    imageDataUrl = await convertPdfToImage(file);
+                } else {
+                    // For images, convert to data URL
+                    imageDataUrl = await fileToDataUrl(file);
+                }
+
+                // Perform OCR
+                const ocrText = await performOCR(imageDataUrl);
+
+                // Identify document type
+                return identifyDocumentTypeFromText(ocrText, file.name);
+            } catch (error) {
+                console.error('OCR error:', error);
+                return file.name;
+            }
+        }
+
+        async function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function convertPdfToImage(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const page = await pdf.getPage(1);
+            
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+            return canvas.toDataURL('image/png');
+        }
+
+        async function performOCR(imageDataUrl) {
+            const languages = 'eng+hin+tam+tel+kan+mal+ben+guj+pan+ori+asm+mar';
+            
+            try {
+                const { data: { text } } = await Tesseract.recognize(
+                    imageDataUrl,
+                    languages,
+                    {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                // Progress tracking
+                            }
+                        }
+                    }
+                );
+                return text;
+            } catch (error) {
+                console.warn('Multi-language OCR failed, trying English only:', error);
+                const { data: { text } } = await Tesseract.recognize(
+                    imageDataUrl,
+                    'eng',
+                    {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                // Progress tracking
+                            }
+                        }
+                    }
+                );
+                return text;
+            }
+        }
+
+        function identifyDocumentTypeFromText(ocrText, fileName) {
+            const text = ocrText.toLowerCase();
+            const originalText = ocrText;
+
+            // Property documents
+            const saleDeedKeywords = [
+                'sale deed', 'sale agreement', 'conveyance deed',
+                'बिक्री पत्र', 'बिक्री समझौता', 'विक्रय पत्र',
+                'விற்பனை பத்திரம்', 'விற்பனை ஒப்பந்தம்',
+                'విక్రయ పత్రం', 'విక్రయ ఒప్పందం'
+            ];
+
+            const propertyTaxKeywords = [
+                'property tax', 'house tax', 'building tax',
+                'संपत्ति कर', 'मकान कर', 'भवन कर',
+                'சொத்து வரி', 'வீடு வரி', 'கட்டிட வரி',
+                'ఆస్తి పన్ను', 'ఇల్లు పన్ను', 'భవనం పన్ను'
+            ];
+
+            const propertyRegistrationKeywords = [
+                'property registration', 'house registration', 'apartment registration',
+                'land registration', 'plot registration',
+                'संपत्ति पंजीकरण', 'मकान पंजीकरण', 'भूमि पंजीकरण',
+                'சொத்து பதிவு', 'வீடு பதிவு', 'நிலம் பதிவு',
+                'ఆస్తి నమోదు', 'ఇల్లు నమోదు', 'భూమి నమోదు'
+            ];
+
+            // Identity documents
+            const identityKeywords = [
+                'aadhaar', 'aadhar', 'pan card', 'passport', 'driving license', 'voter id',
+                'आधार', 'पैन कार्ड', 'पासपोर्ट', 'ड्राइविंग लाइसेंस',
+                'ஆதார்', 'பான் கார்டு', 'பாஸ்போர்ட்', 'ஓட்டர் ஐடி',
+                'ఆధార్', 'పాన్ కార్డ్', 'పాస్పోర్ట్', 'డ్రైవింగ్ లైసెన్స్'
+            ];
+
+            // Insurance documents
+            const insuranceKeywords = [
+                'insurance', 'policy', 'coverage',
+                'बीमा', 'पॉलिसी', 'कवरेज',
+                'காப்பீடு', 'பாலிசி', 'கவரேஜ்',
+                'బీమా', 'పాలసీ', 'కవరేజ్'
+            ];
+
+            // Check document type
+            if (identityKeywords.some(kw => text.includes(kw) || originalText.includes(kw))) {
+                if (text.includes('aadhaar') || text.includes('aadhar') || text.includes('आधार') || text.includes('ஆதார்') || text.includes('ఆధార్')) {
+                    return 'Aadhaar Card';
+                } else if (text.includes('pan') || text.includes('पैन') || text.includes('பான்') || text.includes('పాన్')) {
+                    return 'PAN Card';
+                } else if (text.includes('passport') || text.includes('पासपोर्ट') || text.includes('பாஸ்போர்ட்') || text.includes('పాస్పోర్ట్')) {
+                    return 'Passport';
+                } else {
+                    return 'Identity Document';
+                }
+            } else if (saleDeedKeywords.some(kw => text.includes(kw) || originalText.includes(kw))) {
+                return 'Sale Deed';
+            } else if (propertyTaxKeywords.some(kw => text.includes(kw) || originalText.includes(kw))) {
+                return 'Property Tax Document';
+            } else if (propertyRegistrationKeywords.some(kw => text.includes(kw) || originalText.includes(kw))) {
+                if (text.includes('land') || text.includes('plot') || text.includes('जमीन') || text.includes('நிலம்') || text.includes('భూమి')) {
+                    return 'Land Registration';
+                } else if (text.includes('apartment') || text.includes('flat') || text.includes('अपार्टमेंट') || text.includes('அபார்ட்மெண்ட்') || text.includes('అపార్ట్మెంట్')) {
+                    return 'Apartment Registration';
+                } else {
+                    return 'Property Registration';
+                }
+            } else if (insuranceKeywords.some(kw => text.includes(kw) || originalText.includes(kw))) {
+                return 'Insurance Document';
+            } else if (text.includes('registration') || text.includes('पंजीकरण') || text.includes('பதிவு') || text.includes('నమోదు')) {
+                return 'Registration Document';
+            } else if (text.includes('property') || text.includes('house') || text.includes('संपत्ति') || text.includes('மனை') || text.includes('ఆస్తి')) {
+                return 'Property Document';
+            } else {
+                // Extract base name without extension
+                const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
+                return nameWithoutExt || 'Document';
+            }
+        }
+
+        function renderDocuments() {
+            documentsList.innerHTML = '';
+
+            if (documents.length === 0) {
+                // Show large upload card when no documents
+                uploadCard.classList.remove('hidden');
+                uploadMoreButton.classList.add('hidden');
+                return;
+            }
+
+            // Show documents
+            documents.forEach((doc, index) => {
+                const card = createDocumentCard(doc, index);
+                documentsList.appendChild(card);
+            });
+
+            // Show small upload button if under limit, hide large card
+            if (documents.length < MAX_DOCUMENTS) {
+                uploadCard.classList.add('hidden');
+                uploadMoreButton.classList.remove('hidden');
+            } else {
+                uploadCard.classList.add('hidden');
+                uploadMoreButton.classList.add('hidden');
+            }
+        }
+
+        function createDocumentCard(doc, index) {
+            const card = document.createElement('div');
+            card.className = 'bg-card text-card-foreground rounded-lg border shadow-sm p-4';
+            card.dataset.documentId = doc.id;
+
+            // Get file format
+            let fileFormat = 'PDF';
+            let formatIcon = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+            `;
+            
+            if (doc.type === 'image/png') {
+                fileFormat = 'PNG';
+                formatIcon = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                `;
+            } else if (doc.type === 'image/jpeg' || doc.type === 'image/jpg') {
+                fileFormat = 'JPEG';
+                formatIcon = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                `;
+            }
+
+            // Format upload date
+            const uploadDate = doc.uploadDate ? formatDate(doc.uploadDate) : 'Just now';
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        <div class="flex-shrink-0 text-muted-foreground">
+                            ${formatIcon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <input 
+                                type="text" 
+                                value="${escapeHtml(doc.name)}" 
+                                class="text-sm font-medium bg-transparent border-none outline-none focus:ring-2 focus:ring-ring rounded px-2 -ml-2 w-full"
+                                data-document-id="${doc.id}"
+                                onchange="updateDocumentName('${doc.id}', this.value)"
+                                ${doc.isProcessing ? 'disabled' : ''}
+                            >
+                            <p class="text-xs text-muted-foreground mt-0.5">${uploadDate}</p>
+                        </div>
+                    </div>
+                    <button 
+                        onclick="deleteDocument('${doc.id}')"
+                        class="ml-4 flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1"
+                        title="Delete document"
+                        ${doc.isProcessing ? 'disabled' : ''}
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                ${doc.isProcessing ? `
+                    <div class="mt-3 flex items-center space-x-2 text-xs text-muted-foreground">
+                        <div class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                        <span>Processing document...</span>
+                    </div>
+                ` : ''}
+            `;
+
+            return card;
+        }
+
+        function updateDocumentName(documentId, newName) {
+            const doc = documents.find(d => d.id === documentId);
+            if (doc) {
+                doc.name = newName || 'Document';
+            }
+        }
+
+        function deleteDocument(documentId) {
+            documents = documents.filter(d => d.id !== documentId);
+            renderDocuments();
+        }
+
+        function formatDate(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) {
+                return 'Just now';
+            } else if (diffMins < 60) {
+                return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffDays < 7) {
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Make functions globally available
+        window.updateDocumentName = updateDocumentName;
+        window.deleteDocument = deleteDocument;
+
+        // ============================================
+        // MOCK DATA - Replace with Account Aggregator API calls
+        // ============================================
+        const mockAssetData = {
+            bankSavings: {
+                total: 1247350,
+                accounts: 3,
+                details: [
+                    { bank: 'HDFC Bank', accountNumber: '****1234', balance: 452387, type: 'Savings' },
+                    { bank: 'ICICI Bank', accountNumber: '****5678', balance: 598621, type: 'Savings' },
+                    { bank: 'State Bank of India', accountNumber: '****9012', balance: 196342, type: 'Current' }
+                ]
+            },
+            loans: {
+                total: 3528476,
+                count: 2,
+                details: [
+                    { 
+                        lender: 'HDFC Bank', 
+                        loanType: 'Home Loan', 
+                        purpose: 'House Purchase',
+                        outstanding: 2834921, 
+                        originalAmount: 4250000,
+                        paidAmount: 1415079,
+                        emi: 25147, 
+                        tenure: 180,
+                        remainingMonths: 132,
+                        startDate: '2019-01-15'
+                    },
+                    { 
+                        lender: 'Bajaj Finserv', 
+                        loanType: 'Personal Loan', 
+                        purpose: 'Personal',
+                        outstanding: 693555, 
+                        originalAmount: 1025000,
+                        paidAmount: 331445,
+                        emi: 15234, 
+                        tenure: 60,
+                        remainingMonths: 20,
+                        startDate: '2022-06-01'
+                    }
+                ]
+            },
+            assets: {
+                total: 8475234,
+                count: 3,
+                details: [
+                    { name: 'Residential Apartment', location: 'Bangalore', value: 6487234, type: 'Property' },
+                    { name: 'Commercial Plot', location: 'Hyderabad', value: 1523400, type: 'Land' },
+                    { name: 'Maruti Swift', value: 464600, type: 'Vehicle' }
+                ]
+            },
+            mutualFunds: {
+                total: 847293,
+                count: 6,
+                details: [
+                    { name: 'HDFC Equity Fund', amount: 198234, returns: '+12.47%', type: 'Equity' },
+                    { name: 'SBI Bluechip Fund', amount: 182156, returns: '+15.23%', type: 'Equity' },
+                    { name: 'ICICI Prudential Balanced', amount: 151892, returns: '+10.81%', type: 'Hybrid' },
+                    { name: 'Axis Long Term Equity', amount: 123478, returns: '+18.34%', type: 'ELSS' },
+                    { name: 'UTI Nifty 50 Index', amount: 98765, returns: '+14.12%', type: 'Index' },
+                    { name: 'Franklin India Bluechip', amount: 92768, returns: '+11.89%', type: 'Equity' }
+                ]
+            },
+            stocks: {
+                total: 1187432,
+                count: 8,
+                details: [
+                    { symbol: 'RELIANCE', name: 'Reliance Industries', quantity: 50, value: 124387, returns: '+8.47%' },
+                    { symbol: 'TCS', name: 'Tata Consultancy Services', quantity: 30, value: 112456, returns: '+12.31%' },
+                    { symbol: 'INFY', name: 'Infosys Limited', quantity: 100, value: 152389, returns: '+15.21%' },
+                    { symbol: 'HDFCBANK', name: 'HDFC Bank', quantity: 80, value: 141234, returns: '+9.78%' },
+                    { symbol: 'ICICIBANK', name: 'ICICI Bank', quantity: 120, value: 128967, returns: '+11.43%' },
+                    { symbol: 'BHARTIARTL', name: 'Bharti Airtel', quantity: 200, value: 182345, returns: '+22.14%' },
+                    { symbol: 'ITC', name: 'ITC Limited', quantity: 500, value: 198234, returns: '+6.72%' },
+                    { symbol: 'SBIN', name: 'State Bank of India', quantity: 300, value: 189422, returns: '+13.89%' }
+                ]
+            },
+            digitalGold: {
+                total: 74238,
+                count: 1,
+                details: [
+                    { platform: 'Paytm Gold', units: 15.47, value: 74238, currentPrice: 4798 }
+                ]
+            }
+        };
+
+        // ============================================
+        // RENDERING FUNCTIONS
+        // ============================================
+        function renderBankSavingsDetails(data) {
+            const container = document.getElementById('bankSavingsDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No bank accounts connected.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            data.details.forEach(account => {
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${account.bank}</p>
+                            <p class="text-xs text-muted-foreground">${account.accountNumber} • ${account.type}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">${formatCurrency(account.balance)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderLoansDetails(data) {
+            const container = document.getElementById('loansDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No active loans.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-4">';
+            data.details.forEach(loan => {
+                const progressPercent = loan.originalAmount ? ((loan.paidAmount / loan.originalAmount) * 100).toFixed(1) : 0;
+                const purposeIcon = loan.purpose === 'House Purchase' ? '🏠' : loan.purpose === 'Car' ? '🚗' : '💼';
+                
+                html += `
+                    <div class="p-4 bg-muted rounded-lg border hover:shadow-md transition-shadow">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-lg">${purposeIcon}</span>
+                                    <p class="font-semibold text-base">${loan.loanType}</p>
+                                </div>
+                                <p class="text-xs text-muted-foreground mb-2">${loan.lender}</p>
+                                <div class="inline-flex items-center px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-medium">
+                                    ${loan.purpose}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-destructive">${formatCurrency(loan.outstanding)}</p>
+                                <p class="text-xs text-muted-foreground">Outstanding</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-3">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-muted-foreground">Original Amount</span>
+                                <span class="font-medium">${formatCurrency(loan.originalAmount || 0)}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-muted-foreground">Amount Paid</span>
+                                <span class="font-medium text-green-600">${formatCurrency(loan.paidAmount || 0)}</span>
+                            </div>
+                            <div class="w-full bg-secondary rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <p class="text-xs text-muted-foreground text-center">${progressPercent}% paid</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-3 pt-3 border-t">
+                            <div>
+                                <p class="text-xs text-muted-foreground mb-1">EMI</p>
+                                <p class="font-semibold text-sm">${formatCurrency(loan.emi)}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted-foreground mb-1">Remaining</p>
+                                <p class="font-semibold text-sm">${loan.remainingMonths || 0} months</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted-foreground mb-1">Total Tenure</p>
+                                <p class="font-semibold text-sm">${loan.tenure || 0} months</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderAssetsDetails(data) {
+            const container = document.getElementById('assetsDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No assets recorded.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            data.details.forEach(asset => {
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${asset.name}</p>
+                            ${asset.location ? `<p class="text-xs text-muted-foreground">${asset.location} • ${asset.type}</p>` : `<p class="text-xs text-muted-foreground">${asset.type}</p>`}
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">${formatCurrency(asset.value)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderMutualFundsDetails(data) {
+            const container = document.getElementById('mutualFundsDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No mutual fund investments.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            data.details.forEach(fund => {
+                const isPositive = fund.returns.startsWith('+');
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${fund.name}</p>
+                            <p class="text-xs text-muted-foreground">${fund.type}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">${formatCurrency(fund.amount)}</p>
+                            <p class="text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}">${fund.returns}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderStocksDetails(data) {
+            const container = document.getElementById('stocksDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No stock holdings.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            data.details.forEach(stock => {
+                const isPositive = stock.returns.startsWith('+');
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${stock.symbol}</p>
+                            <p class="text-xs text-muted-foreground">${stock.name} • Qty: ${stock.quantity}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">${formatCurrency(stock.value)}</p>
+                            <p class="text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}">${stock.returns}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderDigitalGoldDetails(data) {
+            const container = document.getElementById('digitalGoldDetails');
+            if (!data || data.details.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No digital gold holdings.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            data.details.forEach(gold => {
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${gold.platform}</p>
+                            <p class="text-xs text-muted-foreground">${gold.units} grams • ₹${gold.currentPrice}/gram</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">${formatCurrency(gold.value)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // UPDATE ASSET DATA FUNCTION
+        // Replace this function with Account Aggregator API call
+        // ============================================
+        // Pie Chart Instance
+        let assetPieChart = null;
+
+        // Flip Card Handlers
+        function setupFlipCards() {
+            const flipCards = document.querySelectorAll('.flip-card');
+            flipCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('flipped');
+                });
+            });
+        }
+
+        // Populate Flip Card Back Sides with Summary Statistics
+        function populateFlipCardDetails(data) {
+            // Bank Savings - Show summary stats
+            if (data.bankSavings && data.bankSavings.details) {
+                const container = document.getElementById('bankSavingsFlipDetails');
+                const accounts = data.bankSavings.details;
+                const totalAccounts = accounts.length;
+                const savingsAccounts = accounts.filter(a => a.type === 'Savings').length;
+                const currentAccounts = accounts.filter(a => a.type === 'Current').length;
+                const largestAccount = accounts.reduce((max, acc) => acc.balance > max.balance ? acc : max, accounts[0]);
+                const avgBalance = Math.round(data.bankSavings.total / totalAccounts);
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total Accounts</p>
+                                <p class="text-lg font-bold">${totalAccounts}</p>
+                            </div>
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Avg Balance</p>
+                                <p class="text-sm font-semibold">${formatCurrency(avgBalance)}</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Account Types</p>
+                            <p class="text-sm font-medium">${savingsAccounts} Savings • ${currentAccounts} Current</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Largest Account</p>
+                            <p class="text-sm font-semibold">${largestAccount.bank}</p>
+                            <p class="text-xs text-muted-foreground">${formatCurrency(largestAccount.balance)}</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            // Loans - Show summary stats
+            if (data.loans && data.loans.details) {
+                const container = document.getElementById('loansFlipDetails');
+                const loans = data.loans.details;
+                const totalLoans = loans.length;
+                const totalEMI = loans.reduce((sum, loan) => sum + loan.emi, 0);
+                const avgRemainingMonths = Math.round(loans.reduce((sum, loan) => sum + loan.remainingMonths, 0) / totalLoans);
+                const homeLoans = loans.filter(l => l.purpose === 'House Purchase').length;
+                const personalLoans = loans.filter(l => l.purpose === 'Personal').length;
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total Loans</p>
+                                <p class="text-lg font-bold">${totalLoans}</p>
+                            </div>
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total EMI</p>
+                                <p class="text-sm font-semibold">${formatCurrency(totalEMI)}</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Loan Types</p>
+                            <p class="text-sm font-medium">${homeLoans} Home • ${personalLoans} Personal</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Avg Remaining</p>
+                            <p class="text-sm font-semibold">${avgRemainingMonths} months</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            // Assets - Show summary stats
+            if (data.assets && data.assets.details) {
+                const container = document.getElementById('assetsFlipDetails');
+                const assets = data.assets.details;
+                const propertyAssets = assets.filter(a => a.type === 'Property' || a.type === 'Land');
+                const vehicleAssets = assets.filter(a => a.type === 'Vehicle');
+                const largestAsset = assets.reduce((max, asset) => asset.value > max.value ? asset : max, assets[0]);
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total Assets</p>
+                                <p class="text-lg font-bold">${assets.length}</p>
+                            </div>
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Properties</p>
+                                <p class="text-sm font-semibold">${propertyAssets.length}</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Asset Breakdown</p>
+                            <p class="text-sm font-medium">${propertyAssets.length} Property • ${vehicleAssets.length} Vehicle</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Largest Asset</p>
+                            <p class="text-sm font-semibold">${largestAsset.name}</p>
+                            <p class="text-xs text-muted-foreground">${formatCurrency(largestAsset.value)}</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            // Mutual Funds - Show summary stats
+            if (data.mutualFunds && data.mutualFunds.details) {
+                const container = document.getElementById('mutualFundsFlipDetails');
+                const funds = data.mutualFunds.details;
+                const totalFunds = funds.length;
+                const equityFunds = funds.filter(f => f.type === 'Equity').length;
+                const avgReturns = funds.reduce((sum, fund) => {
+                    const ret = parseFloat(fund.returns.replace('+', '').replace('%', ''));
+                    return sum + ret;
+                }, 0) / totalFunds;
+                const topPerformer = funds.reduce((max, fund) => {
+                    const ret = parseFloat(fund.returns.replace('+', '').replace('%', ''));
+                    const maxRet = parseFloat(max.returns.replace('+', '').replace('%', ''));
+                    return ret > maxRet ? fund : max;
+                }, funds[0]);
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total Funds</p>
+                                <p class="text-lg font-bold">${totalFunds}</p>
+                            </div>
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Avg Returns</p>
+                                <p class="text-sm font-semibold text-green-600">+${avgReturns.toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Fund Types</p>
+                            <p class="text-sm font-medium">${equityFunds} Equity • ${totalFunds - equityFunds} Others</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Top Performer</p>
+                            <p class="text-sm font-semibold">${topPerformer.name}</p>
+                            <p class="text-xs text-green-600">${topPerformer.returns}</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            // Stocks - Show summary stats
+            if (data.stocks && data.stocks.details) {
+                const container = document.getElementById('stocksFlipDetails');
+                const stocks = data.stocks.details;
+                const totalHoldings = stocks.length;
+                const totalQuantity = stocks.reduce((sum, stock) => sum + stock.quantity, 0);
+                const avgReturns = stocks.reduce((sum, stock) => {
+                    const ret = parseFloat(stock.returns.replace('+', '').replace('%', ''));
+                    return sum + ret;
+                }, 0) / totalHoldings;
+                const topPerformer = stocks.reduce((max, stock) => {
+                    const ret = parseFloat(stock.returns.replace('+', '').replace('%', ''));
+                    const maxRet = parseFloat(max.returns.replace('+', '').replace('%', ''));
+                    return ret > maxRet ? stock : max;
+                }, stocks[0]);
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Total Holdings</p>
+                                <p class="text-lg font-bold">${totalHoldings}</p>
+                            </div>
+                            <div class="p-2 bg-muted rounded text-center">
+                                <p class="text-xs text-muted-foreground mb-1">Avg Returns</p>
+                                <p class="text-sm font-semibold text-green-600">+${avgReturns.toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Total Shares</p>
+                            <p class="text-sm font-medium">${totalQuantity.toLocaleString()} shares</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Top Performer</p>
+                            <p class="text-sm font-semibold">${topPerformer.symbol}</p>
+                            <p class="text-xs text-green-600">${topPerformer.returns}</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            // Digital Gold - Show summary stats
+            if (data.digitalGold && data.digitalGold.details) {
+                const container = document.getElementById('digitalGoldFlipDetails');
+                const gold = data.digitalGold.details[0];
+                const totalGrams = data.digitalGold.details.reduce((sum, g) => sum + g.units, 0);
+                
+                const html = `
+                    <div class="space-y-3">
+                        <div class="p-2 bg-muted rounded text-center">
+                            <p class="text-xs text-muted-foreground mb-1">Total Gold</p>
+                            <p class="text-lg font-bold">${totalGrams.toFixed(2)}g</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Platform</p>
+                            <p class="text-sm font-semibold">${gold.platform}</p>
+                        </div>
+                        <div class="p-2 bg-muted rounded">
+                            <p class="text-xs text-muted-foreground mb-1">Current Price</p>
+                            <p class="text-sm font-medium">₹${gold.currentPrice}/gram</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+        }
+
+        // Calculate Asset Distribution
+        function calculateAssetDistribution(data) {
+            const distribution = {
+                'Property/Real Estate': 0,
+                'Cash/Savings': 0,
+                'Stocks & Equity': 0,
+                'Mutual Funds': 0,
+                'Gold': 0,
+                'Other Assets': 0
+            };
+
+            if (data.bankSavings) {
+                distribution['Cash/Savings'] += data.bankSavings.total;
+            }
+
+            if (data.assets) {
+                data.assets.details.forEach(asset => {
+                    if (asset.type === 'Property' || asset.type === 'Land') {
+                        distribution['Property/Real Estate'] += asset.value;
+                    } else {
+                        distribution['Other Assets'] += asset.value;
+                    }
+                });
+            }
+
+            if (data.stocks) {
+                distribution['Stocks & Equity'] += data.stocks.total;
+            }
+
+            if (data.mutualFunds) {
+                distribution['Mutual Funds'] += data.mutualFunds.total;
+            }
+
+            if (data.digitalGold) {
+                distribution['Gold'] += data.digitalGold.total;
+            }
+
+            return distribution;
+        }
+
+        // Render Pie Chart
+        function renderPieChart(data) {
+            const ctx = document.getElementById('assetPieChart');
+            if (!ctx) return;
+
+            const distribution = calculateAssetDistribution(data);
+            const labels = Object.keys(distribution).filter(key => distribution[key] > 0);
+            const values = labels.map(key => distribution[key]);
+            
+            // Modern, sophisticated color palette
+            const colors = [
+                { bg: 'rgba(34, 197, 94, 0.9)', border: 'rgb(22, 163, 74)', hover: 'rgba(34, 197, 94, 1)' },   // Property - Green
+                { bg: 'rgba(59, 130, 246, 0.9)', border: 'rgb(37, 99, 235)', hover: 'rgba(59, 130, 246, 1)' },  // Cash - Blue
+                { bg: 'rgba(249, 115, 22, 0.9)', border: 'rgb(234, 88, 12)', hover: 'rgba(249, 115, 22, 1)' },  // Stocks - Orange
+                { bg: 'rgba(168, 85, 247, 0.9)', border: 'rgb(147, 51, 234)', hover: 'rgba(168, 85, 247, 1)' }, // Mutual Funds - Purple
+                { bg: 'rgba(234, 179, 8, 0.9)', border: 'rgb(202, 138, 4)', hover: 'rgba(234, 179, 8, 1)' },   // Gold - Yellow
+                { bg: 'rgba(107, 114, 128, 0.9)', border: 'rgb(75, 85, 99)', hover: 'rgba(107, 114, 128, 1)' }  // Other - Gray
+            ];
+
+            if (assetPieChart) {
+                assetPieChart.destroy();
+            }
+
+            assetPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length).map(c => c.bg),
+                        borderColor: colors.slice(0, labels.length).map(c => c.border),
+                        borderWidth: 3,
+                        hoverBorderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return [`${label}`, `${formatCurrency(value)}`, `${percentage}% of total`];
+                                }
+                            },
+                            displayColors: true,
+                            boxPadding: 6
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'nearest'
+                    }
+                }
+            });
+
+            // Render Premium Legend
+            const legendContainer = document.getElementById('pieChartLegend');
+            const total = values.reduce((a, b) => a + b, 0);
+            
+            let legendHtml = '<div class="space-y-3">';
+            labels.forEach((label, index) => {
+                const value = distribution[label];
+                const percentage = ((value / total) * 100).toFixed(1);
+                const color = colors[index];
+                
+                legendHtml += `
+                    <div class="group p-4 bg-muted/50 rounded-lg border border-transparent hover:border-primary/20 hover:bg-muted transition-all cursor-pointer">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 rounded-full shadow-sm" style="background: linear-gradient(135deg, ${color.bg}, ${color.border})"></div>
+                                <span class="text-sm font-semibold text-foreground">${label}</span>
+                            </div>
+                            <span class="text-sm font-bold">${percentage}%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs text-muted-foreground">Value</p>
+                            <p class="text-sm font-semibold">${formatCurrency(value)}</p>
+                        </div>
+                        <div class="mt-2 w-full bg-secondary rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; background: linear-gradient(90deg, ${color.bg}, ${color.border})"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            legendHtml += '</div>';
+            legendContainer.innerHTML = legendHtml;
+        }
+
+        function updateAssetData(data) {
+            let totalAssets = 0;
+            let totalLiabilities = 0;
+            
+            // Update overview cards
+            if (data.bankSavings) {
+                document.getElementById('bankSavingsTotal').textContent = formatCurrency(data.bankSavings.total);
+                document.getElementById('bankAccountsCount').textContent = data.bankSavings.accounts || 0;
+                renderBankSavingsDetails(data.bankSavings);
+                totalAssets += data.bankSavings.total;
+            }
+            
+            if (data.loans) {
+                document.getElementById('loansTotal').textContent = formatCurrency(data.loans.total);
+                document.getElementById('loansCount').textContent = data.loans.count || 0;
+                renderLoansDetails(data.loans);
+                totalLiabilities += data.loans.total;
+            }
+            
+            if (data.assets) {
+                document.getElementById('assetsTotal').textContent = formatCurrency(data.assets.total);
+                document.getElementById('assetsCount').textContent = data.assets.count || 0;
+                renderAssetsDetails(data.assets);
+                totalAssets += data.assets.total;
+            }
+            
+            if (data.mutualFunds) {
+                document.getElementById('mutualFundsTotal').textContent = formatCurrency(data.mutualFunds.total);
+                document.getElementById('mutualFundsCount').textContent = data.mutualFunds.count || 0;
+                renderMutualFundsDetails(data.mutualFunds);
+                totalAssets += data.mutualFunds.total;
+            }
+            
+            if (data.stocks) {
+                document.getElementById('stocksTotal').textContent = formatCurrency(data.stocks.total);
+                document.getElementById('stocksCount').textContent = data.stocks.count || 0;
+                renderStocksDetails(data.stocks);
+                totalAssets += data.stocks.total;
+            }
+            
+            if (data.digitalGold) {
+                document.getElementById('digitalGoldTotal').textContent = formatCurrency(data.digitalGold.total);
+                document.getElementById('digitalGoldCount').textContent = data.digitalGold.count || 0;
+                renderDigitalGoldDetails(data.digitalGold);
+                totalAssets += data.digitalGold.total;
+            }
+            
+            // Update Net Worth Summary
+            const netWorth = totalAssets - totalLiabilities;
+            document.getElementById('netWorth').textContent = formatCurrency(netWorth);
+            document.getElementById('totalAssets').textContent = formatCurrency(totalAssets);
+            document.getElementById('totalLiabilities').textContent = formatCurrency(totalLiabilities);
+
+            // Populate flip card details
+            populateFlipCardDetails(data);
+
+            // Render pie chart
+            renderPieChart(data);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // ============================================
+        // INITIALIZE WITH MOCK DATA
+        // Replace this with Account Aggregator API call
+        // ============================================
+        // TODO: Replace this with actual API call
+        // Example: fetchAccountAggregatorData().then(updateAssetData);
+        // Sticky Net Worth Card Handler
+        function setupStickyNetWorth() {
+            const netWorthCard = document.getElementById('netWorthCard');
+            const netWorthWrapper = document.querySelector('.net-worth-wrapper');
+            if (!netWorthCard || !netWorthWrapper) return;
+
+            const threshold = netWorthWrapper.offsetTop + netWorthWrapper.offsetHeight - 100;
+
+            function handleScroll() {
+                const scrollY = window.scrollY || window.pageYOffset;
+                
+                if (scrollY > threshold) {
+                    if (!netWorthCard.classList.contains('sticky')) {
+                        netWorthCard.classList.add('sticky');
+                        document.body.classList.add('has-sticky');
+                    }
+                } else {
+                    if (netWorthCard.classList.contains('sticky')) {
+                        netWorthCard.classList.remove('sticky');
+                        document.body.classList.remove('has-sticky');
+                    }
+                }
+            }
+
+            // Throttle scroll events for better performance
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        handleScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Initial check
+            handleScroll();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load mock data for visualization
+            updateAssetData(mockAssetData);
+            // Setup flip card interactions
+            setupFlipCards();
+            // Setup sticky net worth card
+            setupStickyNetWorth();
+        });
+    </script>
+</body>
+</html>
