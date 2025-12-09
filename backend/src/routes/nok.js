@@ -2,6 +2,12 @@ import express from 'express';
 import db from '../models/index.js';
 import { authenticate } from '../middleware/auth.js';
 
+// Normalize mobile number for comparison
+function normalizeMobile(mobile) {
+  if (!mobile) return mobile;
+  return mobile.replace(/[^\d+]/g, '');
+}
+
 const router = express.Router();
 
 /**
@@ -30,11 +36,16 @@ router.post('/designate', authenticate, (req, res) => {
 
     // Check if user already has a NOK designation
     const existingDesignation = db.getNOKDesignationByUserId(req.user.id);
-    if (existingDesignation && existingDesignation.status === 'accepted') {
-      return res.status(400).json({
-        success: false,
-        message: 'You already have an accepted NOK designation'
-      });
+    if (existingDesignation) {
+      if (existingDesignation.status === 'accepted') {
+        return res.status(400).json({
+          success: false,
+          message: 'You already have an accepted NOK designation. Please revoke it first to designate a new NOK.'
+        });
+      }
+      // If there's a pending or rejected designation, revoke it automatically
+      console.log(`⚠️ [NOK-DESIGNATE] Auto-revoking existing ${existingDesignation.status} designation`);
+      db.updateNOKDesignation(existingDesignation.id, { status: 'revoked' });
     }
 
     // Create NOK designation
@@ -184,7 +195,7 @@ router.post('/accept/:designationId', authenticate, (req, res) => {
     }
 
     // Verify that the current user's mobile matches the NOK mobile
-    if (designation.nokMobile !== req.user.mobile) {
+    if (normalizeMobile(designation.nokMobile) !== normalizeMobile(req.user.mobile)) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to accept this designation'
@@ -239,7 +250,7 @@ router.post('/reject/:designationId', authenticate, (req, res) => {
     }
 
     // Verify that the current user's mobile matches the NOK mobile
-    if (designation.nokMobile !== req.user.mobile) {
+    if (normalizeMobile(designation.nokMobile) !== normalizeMobile(req.user.mobile)) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to reject this designation'

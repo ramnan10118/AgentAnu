@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // Colors
-  static const Color primaryColor = Color(0xFF1E40AF);
+  static const Color primaryColor = Color(0xFFE87B5A); // Coral orange CTA color
   static const Color secondaryColor = Color(0xFFF59E0B);
   static const Color successColor = Color(0xFF10B981);
   static const Color errorColor = Color(0xFFEF4444);

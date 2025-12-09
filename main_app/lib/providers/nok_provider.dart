@@ -59,7 +59,9 @@ class NokNotifier extends StateNotifier<NokState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Designation failed');
+      // Extract error message from backend response
+      final errorMessage = response['message'] ?? 'Designation failed';
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

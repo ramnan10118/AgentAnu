@@ -59,7 +59,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> sendOtp(String mobile) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _apiService.sendOtp(mobile);
+      // Clean mobile number - remove spaces and special characters except +
+      final cleanMobile = mobile.replaceAll(RegExp(r'[^\d+]'), '');
+      final response = await _apiService.sendOtp(cleanMobile);
       state = state.copyWith(isLoading: false);
       return response['success'] == true;
     } catch (e) {
@@ -71,7 +73,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyOtp(String mobile, String otp) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _apiService.verifyOtp(mobile, otp);
+      // Clean mobile number - remove spaces and special characters except +
+      final cleanMobile = mobile.replaceAll(RegExp(r'[^\d+]'), '');
+      final response = await _apiService.verifyOtp(cleanMobile, otp);
       if (response['success'] == true) {
         await _storage.saveToken(response['token']);
         await _storage.saveUser(response['user']);

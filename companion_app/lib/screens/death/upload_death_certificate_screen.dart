@@ -175,28 +175,36 @@ class _UploadDeathCertificateScreenState
               const SizedBox(height: AppConstants.spacingXL),
               
               if (_isVerifying) ...[
-                Container(
-                  padding: const EdgeInsets.all(AppConstants.spacingXL),
-                  child: const Column(
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: AppConstants.spacingLG),
-                      Text(
-                        'Verifying death certificate...',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                // Verification loader on white background
+                SizedBox(
+                  height: MediaQuery.of(context).size.height - 200,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppConstants.primaryColor),
+                          strokeWidth: 3,
                         ),
-                      ),
-                      SizedBox(height: AppConstants.spacingSM),
-                      Text(
-                        'This usually takes a few seconds',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                        SizedBox(height: AppConstants.spacingXL),
+                        Text(
+                          'Verifying death certificate...',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                    ],
+                        SizedBox(height: AppConstants.spacingMD),
+                        Text(
+                          'This usually takes a few seconds',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ] else ...[

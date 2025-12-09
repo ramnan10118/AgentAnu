@@ -261,8 +261,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Color(0xFF95122C),
-                                Color(0xFF100C08),
+                                Color(0xFFFF9575),
+                                Color(0xFFE87B5A),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(8),
@@ -609,8 +609,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Color(0xFF95122C),
-                                Color(0xFF100C08),
+                                Color(0xFFFF9575),
+                                Color(0xFFE87B5A),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(8),
@@ -1160,8 +1160,8 @@ class _AssetBottomSheet extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFF95122C),
-                        Color(0xFF100C08),
+                        Color(0xFFFF9575),
+                        Color(0xFFE87B5A),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(ShadcnColors.radius),

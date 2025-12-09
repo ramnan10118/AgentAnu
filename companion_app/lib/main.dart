@@ -33,7 +33,7 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E40AF),
+          seedColor: const Color(0xFFE87B5A), // Coral orange CTA color
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFF9FAFB),

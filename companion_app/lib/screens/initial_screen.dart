@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../services/socket_service.dart';
 import '../providers/auth_provider.dart';
 import '../utils/constants.dart';
+import '../widgets/bottom_notification_card.dart';
 import 'designation_response_screen.dart';
 
 class InitialScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
   String _currentTime = '';
   Timer? _timer;
   Map<String, dynamic>? _pendingDesignation;
+  bool _showNotification = false;
 
   @override
   void initState() {
@@ -51,10 +53,8 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       if (mounted) {
         setState(() {
           _pendingDesignation = data;
+          _showNotification = true;
         });
-
-        // Show notification dialog
-        _showDesignationNotification(data);
       } else {
         print('⚠️ [INITIAL-SCREEN] Widget not mounted, cannot show notification');
       }
@@ -137,89 +137,6 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     }
   }
 
-  void _showDesignationNotification(Map<String, dynamic> data) {
-    final accountHolderName = data['accountHolderName'] ?? 'Someone';
-    final relationship = data['relationship'] ?? 'next of kin';
-    final nokMobile = data['nokMobile'] ?? '';
-    final nokName = data['nokName'] ?? 'you';
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.notifications_active, color: AppConstants.primaryColor),
-            SizedBox(width: 8),
-            Text('New Designation'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'You have been designated!',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow('From', accountHolderName),
-            _buildInfoRow('For', nokName),
-            _buildInfoRow('Mobile', nokMobile),
-            _buildInfoRow('As', relationship.toUpperCase()),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Dismiss'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // Close notification dialog
-              _autoLoginAndShowDetails(data); // Auto-login then show details
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.primaryColor,
-            ),
-            child: const Text('View Details'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 70,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppConstants.textSecondary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -231,71 +148,71 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _currentTime,
-              style: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.w300,
-                color: AppConstants.textColor,
-                letterSpacing: 2,
+      body: Stack(
+        children: [
+          // Background gradient
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/gradient_bg.png'),
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Waiting for notifications...',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppConstants.textSecondary.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 32),
-            if (_pendingDesignation != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppConstants.primaryColor,
-                    width: 1,
+          ),
+
+          // Main content (clock + waiting text)
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _currentTime,
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    letterSpacing: 2,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.notifications_active,
-                      color: AppConstants.primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Designation pending',
-                      style: TextStyle(
-                        color: AppConstants.primaryColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () {
-                        _autoLoginAndShowDetails(_pendingDesignation!);
-                      },
-                      child: const Text('Open'),
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                Text(
+                  'Waiting for notifications...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
                 ),
-              ),
-          ],
-        ),
+              ],
+            ),
+          ),
+
+          // Bottom notification card with animation
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            bottom: _showNotification ? 0 : -300,
+            left: 0,
+            right: 0,
+            child: _pendingDesignation != null
+                ? BottomNotificationCard(
+                    title: _pendingDesignation!['accountHolderName'] ?? 'Someone',
+                    subtitle: 'has designated you as NOK',
+                    statusText: 'Relationship: ${(_pendingDesignation!['relationship'] ?? 'next of kin').toString().toUpperCase()}',
+                    onTap: () {
+                      setState(() {
+                        _showNotification = false;
+                      });
+                      // Optional: Navigate to details after delay
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        if (mounted) {
+                          _autoLoginAndShowDetails(_pendingDesignation!);
+                        }
+                      });
+                    },
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
