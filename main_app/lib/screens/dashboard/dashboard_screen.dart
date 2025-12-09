@@ -255,12 +255,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: _loadData,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppConstants.primaryColor,
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFF95122C),
+                                Color(0xFF100C08),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: _loadData,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
+                            ),
                           ),
                         ),
                       ],
@@ -587,24 +603,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ],
               ),
                         ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const NokDesignationScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFAB005),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFF95122C),
+                                Color(0xFF100C08),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('Designate'),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NokDesignationScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Designate'),
+                          ),
                         ),
                       ],
                     ),
@@ -1123,18 +1154,32 @@ class _AssetBottomSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 flex: 2,
-                child: ElevatedButton(
-                  onPressed: onAdd,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ShadcnColors.primary,
-                    foregroundColor: ShadcnColors.primaryForeground,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ShadcnColors.radius),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF95122C),
+                        Color(0xFF100C08),
+                      ],
                     ),
-                    elevation: 0,
+                    borderRadius: BorderRadius.circular(ShadcnColors.radius),
                   ),
-                  child: const Text('Add to Portfolio'),
+                  child: ElevatedButton(
+                    onPressed: onAdd,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: ShadcnColors.primaryForeground,
+                      shadowColor: Colors.transparent,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(ShadcnColors.radius),
+                      ),
+                    ),
+                    child: const Text('Add to Portfolio'),
+                  ),
                 ),
               ),
             ],
@@ -1187,26 +1232,38 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
       return formatter.format(amount);
     }
 
-    return SizedBox(
-      height: actualHeight,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ShadcnColors.primary,
-              ShadcnColors.primary.withOpacity(0.9),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+
+        return SizedBox(
+          height: actualHeight,
+          child: MouseRegion(
+            onEnter: (_) => setState(() => isHovered = true),
+            onExit: (_) => setState(() => isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(-0.8, -0.8),
+                  radius: 1.5,
+                  colors: [
+                    isHovered ? const Color(0xFFE88B5F) : const Color(0xFFD97A4A),  // Warm orange-brown center glow (brightens on hover)
+                    const Color(0xFFB8613A),  // Mid-tone brown
+                    const Color(0xFF8B4A2F),  // Darker brown
+                    const Color(0xFF3D2516),  // Very dark brown
+                    const Color(0xFF1A1A1A),  // Near black edges
+                  ],
+                  stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
                   child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: isCollapsed ? 8 : 16),
           child: isCollapsed
@@ -1332,7 +1389,10 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
             ],
           ),
         ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 

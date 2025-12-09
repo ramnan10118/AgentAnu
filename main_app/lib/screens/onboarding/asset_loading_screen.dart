@@ -37,10 +37,12 @@ class _AssetLoadingScreenState extends ConsumerState<AssetLoadingScreen> {
           );
         }
       } else {
+        final error = ref.read(assetsProvider).error ?? 'Failed to fetch assets';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to fetch assets'),
+          SnackBar(
+            content: Text(error),
             backgroundColor: AppConstants.errorColor,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

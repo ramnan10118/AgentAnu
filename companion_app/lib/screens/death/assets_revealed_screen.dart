@@ -11,6 +11,7 @@ import '../../widgets/asset_category_card.dart';
 import '../../widgets/asset_pie_chart.dart';
 import '../../widgets/collapsible_section.dart';
 import '../../widgets/legacy_info_card.dart';
+import '../../widgets/transfer_help_card.dart';
 
 class AssetsRevealedScreen extends ConsumerWidget {
   final DesignationModel designation;
@@ -330,7 +331,7 @@ class AssetsRevealedScreen extends ConsumerWidget {
                         netWorth: totalNetWorth,
                         totalAssets: totalAssets,
                         totalLiabilities: totalLiabilities,
-                        userName: designation.accountHolderName,
+                        userName: designation.nokName,
                         minHeight: 70,
                         maxHeight: 200,
                       ),
@@ -342,7 +343,7 @@ class AssetsRevealedScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Account Holder Status Card (like NOK card in main app)
+                            // Account Holder Info Card - shows whose assets these are
                             _buildAccountHolderCard(),
                             const SizedBox(height: 20),
 
@@ -440,6 +441,13 @@ class AssetsRevealedScreen extends ConsumerWidget {
 
                             // Legacy Info Card
                             const LegacyInfoCard(isForNok: true),
+                            const SizedBox(height: 24),
+
+                            // Transfer Help Card - CTA for asset transfer assistance
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: TransferHelpCard(),
+                            ),
                             const SizedBox(height: 24),
 
                             // Claims Guidance Card
@@ -552,7 +560,7 @@ class AssetsRevealedScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
-              Icons.check_circle,
+              Icons.account_circle,
               color: Color(0xFF40C057),
               size: 24,
             ),
@@ -563,7 +571,7 @@ class AssetsRevealedScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Account Holder: ${designation.accountHolderName ?? "Unknown"}',
+                  'This is ${designation.accountHolderName ?? "Unknown"}\'s Legacy',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -572,7 +580,7 @@ class AssetsRevealedScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Verified',
+                  'Assets verified and ready for transfer',
                   style: TextStyle(
                     fontSize: 12,
                     color: Color(0xFF2B8A3E),
@@ -734,26 +742,38 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
       return formatter.format(amount);
     }
 
-    return SizedBox(
-      height: actualHeight,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ShadcnColors.primary,
-              ShadcnColors.primary.withOpacity(0.9),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+
+        return SizedBox(
+          height: actualHeight,
+          child: MouseRegion(
+            onEnter: (_) => setState(() => isHovered = true),
+            onExit: (_) => setState(() => isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(-0.8, -0.8),
+                  radius: 1.5,
+                  colors: [
+                    isHovered ? const Color(0xFFE88B5F) : const Color(0xFFD97A4A),  // Warm orange-brown center glow (brightens on hover)
+                    const Color(0xFFB8613A),  // Mid-tone brown
+                    const Color(0xFF8B4A2F),  // Darker brown
+                    const Color(0xFF3D2516),  // Very dark brown
+                    const Color(0xFF1A1A1A),  // Near black edges
+                  ],
+                  stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: isCollapsed ? 8 : 16),
           child: isCollapsed
@@ -823,7 +843,7 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'What you\'re leaving behind',
+                              'Legacy assets to be transferred',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.6),
                                 fontSize: 11,
@@ -879,7 +899,10 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ],
               ),
         ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 

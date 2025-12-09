@@ -26,25 +26,37 @@ class NetWorthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF3B5BDB),
-            Color(0xFF364FC7),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B5BDB).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => isHovered = true),
+          onExit: (_) => setState(() => isHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: const Alignment(-0.8, -0.8),
+                radius: 1.5,
+                colors: [
+                  isHovered ? const Color(0xFFE88B5F) : const Color(0xFFD97A4A),  // Warm orange-brown center glow (brightens on hover)
+                  const Color(0xFFB8613A),  // Mid-tone brown
+                  const Color(0xFF8B4A2F),  // Darker brown
+                  const Color(0xFF3D2516),  // Very dark brown
+                  const Color(0xFF1A1A1A),  // Near black edges
+                ],
+                stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8B4A2F).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
       child: Stack(
         children: [
           // Decorative circles
@@ -208,6 +220,9 @@ class NetWorthCard extends StatelessWidget {
           ),
         ],
       ),
+          ),
+        );
+      },
     );
   }
 }

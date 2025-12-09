@@ -49,13 +49,6 @@ router.post('/consent', authenticate, (req, res) => {
  */
 router.get('/fetch', authenticate, async (req, res) => {
   try {
-    if (!req.user.pan) {
-      return res.status(400).json({
-        success: false,
-        message: 'PAN is required to fetch assets'
-      });
-    }
-
     if (!req.user.consentedAnumati) {
       return res.status(400).json({
         success: false,
@@ -63,8 +56,11 @@ router.get('/fetch', authenticate, async (req, res) => {
       });
     }
 
+    // Use provided PAN or default to first sample PAN for demo purposes
+    const panToUse = req.user.pan || 'ABCDE1234F';
+
     // Fetch assets from mock Anumati
-    const result = await fetchAssets(req.user.pan, req.user.id);
+    const result = await fetchAssets(panToUse, req.user.id);
 
     // Update user name if we got it from Anumati
     if (result.name && !req.user.name) {

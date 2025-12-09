@@ -71,7 +71,9 @@ class AssetsNotifier extends StateNotifier<AssetsState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Failed to fetch assets');
+      // Capture the actual error message from backend
+      final errorMessage = response['message'] ?? 'Failed to fetch assets';
+      state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

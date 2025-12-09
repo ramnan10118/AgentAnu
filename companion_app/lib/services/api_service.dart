@@ -18,6 +18,10 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
       },
+      validateStatus: (status) {
+        // Accept all status codes so we can handle errors manually
+        return status != null && status < 500;
+      },
     ));
 
     // Request interceptor to add token
