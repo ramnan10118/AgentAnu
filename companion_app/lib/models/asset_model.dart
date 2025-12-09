@@ -85,5 +85,10 @@ class AssetModel {
     }
     return '$currency ${value.toStringAsFixed(2)}';
   }
+
+  bool get isLiability {
+    final typeLower = type.toLowerCase();
+    return typeLower == 'loan' || typeLower.contains('loan') || value < 0;
+  }
 }
 

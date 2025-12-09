@@ -5,6 +5,7 @@ import '../../models/designation_model.dart';
 import '../../models/asset_model.dart';
 import '../../providers/assets_provider.dart';
 import '../../utils/constants.dart';
+import '../../utils/shadcn_colors.dart';
 import '../../widgets/net_worth_card.dart';
 import '../../widgets/asset_category_card.dart';
 import '../../widgets/asset_pie_chart.dart';
@@ -33,33 +34,77 @@ class AssetsRevealedScreen extends ConsumerWidget {
   }
 
   AssetCategory _getAssetCategory(String type) {
-    switch (type.toLowerCase()) {
-      case 'deposit':
-      case 'savings':
-      case 'current':
-        return AssetCategory.bankSavings;
-      case 'loan':
-        return AssetCategory.loans;
-      case 'mutual_fund':
-      case 'mf':
-        return AssetCategory.mutualFunds;
-      case 'equity':
-      case 'stock':
-      case 'shares':
-        return AssetCategory.stocks;
-      case 'gold':
-      case 'digital_gold':
-        return AssetCategory.digitalGold;
-      case 'insurance':
-        return AssetCategory.insurance;
-      case 'ppf':
-      case 'nps':
-      case 'fd':
-      case 'rd':
-        return AssetCategory.assets;
-      default:
-        return AssetCategory.other;
+    final typeLower = type.toLowerCase();
+    
+    // Bank accounts and deposits
+    if (typeLower.contains('bank') || 
+        typeLower.contains('account') ||
+        typeLower == 'deposit' ||
+        typeLower == 'savings' ||
+        typeLower == 'current' ||
+        typeLower == 'bank_account') {
+      return AssetCategory.bankSavings;
     }
+    
+    // Loans
+    if (typeLower == 'loan' || typeLower.contains('loan')) {
+      return AssetCategory.loans;
+    }
+    
+    // Mutual funds
+    if (typeLower.contains('mutual') || 
+        typeLower.contains('fund') ||
+        typeLower == 'mf' ||
+        typeLower == 'mutual_fund') {
+      return AssetCategory.mutualFunds;
+    }
+    
+    // Stocks and securities
+    if (typeLower.contains('stock') ||
+        typeLower.contains('equity') ||
+        typeLower.contains('share') ||
+        typeLower.contains('securities') ||
+        typeLower.contains('demat') ||
+        typeLower == 'securities') {
+      return AssetCategory.stocks;
+    }
+    
+    // Digital gold
+    if (typeLower.contains('gold') || 
+        typeLower == 'digital_gold') {
+      return AssetCategory.digitalGold;
+    }
+    
+    // Insurance
+    if (typeLower.contains('insurance')) {
+      return AssetCategory.insurance;
+    }
+    
+    // Fixed deposits, PPF, NPS, RD, EPF, etc.
+    if (typeLower == 'fd' ||
+        typeLower == 'fixed_deposit' ||
+        typeLower.contains('fixed') ||
+        typeLower == 'ppf' ||
+        typeLower == 'nps' ||
+        typeLower == 'rd' ||
+        typeLower == 'recurring' ||
+        typeLower.contains('epf') ||
+        typeLower.contains('provident')) {
+      return AssetCategory.assets;
+    }
+    
+    // Property and real estate
+    if (typeLower.contains('property') ||
+        typeLower.contains('house') ||
+        typeLower.contains('land') ||
+        typeLower.contains('apartment') ||
+        typeLower.contains('real_estate') ||
+        typeLower.contains('registration')) {
+      return AssetCategory.assets;
+    }
+    
+    // Default to other only if truly unknown
+    return AssetCategory.other;
   }
 
   String _formatCurrency(double amount) {
@@ -107,9 +152,9 @@ class AssetsRevealedScreen extends ConsumerWidget {
       case AssetCategory.insurance:
         return 'Insurance';
       case AssetCategory.assets:
-        return 'Other Assets';
+        return 'Fixed Assets';
       case AssetCategory.other:
-        return 'Other';
+        return 'Miscellaneous';
     }
   }
 
@@ -187,8 +232,8 @@ class AssetsRevealedScreen extends ConsumerWidget {
     double totalLiabilities = 0;
     
     for (final asset in assetsState.assets) {
-      if (asset.type.toLowerCase() == 'loan') {
-        totalLiabilities += asset.value;
+      if (asset.type.toLowerCase() == 'loan' || asset.isLiability) {
+        totalLiabilities += asset.value < 0 ? -asset.value : asset.value;
       } else {
         totalAssets += asset.value;
       }
@@ -224,289 +269,380 @@ class AssetsRevealedScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: ShadcnColors.background,
       appBar: AppBar(
-        title: const Text('Assets Revealed'),
-        backgroundColor: const Color(0xFF40C057),
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Sunset',
+          style: TextStyle(
+            color: ShadcnColors.primaryForeground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: ShadcnColors.primary,
+        foregroundColor: ShadcnColors.primaryForeground,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Legacy Info Card (for NOK)
-            const LegacyInfoCard(isForNok: true),
-            const SizedBox(height: 20),
-
-            // Net Worth Card
-            NetWorthCard(
-              totalNetWorth: totalNetWorth,
-              totalAssets: totalAssets,
-              totalLiabilities: totalLiabilities,
-              userName: designation.accountHolderName,
-            ),
-            const SizedBox(height: 20),
-
-            // Account Holder Info Card
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+      body: assetsState.isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading assets...'),
                 ],
               ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF40C057).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.person_outline,
-                      color: Color(0xFF40C057),
-                      size: 28,
-                    ),
+            )
+          : assetsState.error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppConstants.errorColor,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Error loading assets',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        assetsState.error!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Account Holder',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          designation.accountHolderName ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
+                )
+              : CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    // Sticky Net Worth Card
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _NetWorthHeaderDelegate(
+                        netWorth: totalNetWorth,
+                        totalAssets: totalAssets,
+                        totalLiabilities: totalLiabilities,
+                        userName: designation.accountHolderName,
+                        minHeight: 70,
+                        maxHeight: 200,
+                      ),
+                    ),
+                    
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
+                            // Account Holder Status Card (like NOK card in main app)
+                            _buildAccountHolderCard(),
+                            const SizedBox(height: 20),
+
+                            // Assets Overview Header
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: ShadcnColors.muted,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      Icons.bar_chart,
+                                      size: 18,
+                                      color: ShadcnColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Assets Overview',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: ShadcnColors.foreground,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: ShadcnColors.muted,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Just now',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: ShadcnColors.mutedForeground,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF40C057).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                designation.relationship,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF2B8A3E),
-                                  fontWeight: FontWeight.w500,
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Pie Chart
+                            if (pieData.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: ShadcnColors.card,
+                                    borderRadius: BorderRadius.circular(ShadcnColors.radius),
+                                    border: Border.all(color: ShadcnColors.border, width: 1),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.02),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: AssetPieChart(distributions: pieData),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.verified,
-                              size: 16,
-                              color: Color(0xFF40C057),
-                            ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'Verified',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF2B8A3E),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Asset Category Cards Grid
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: GridView.count(
+                                crossAxisCount: 3,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                                childAspectRatio: 1.5,
+                                children: [
+                                  _buildCategoryCard(AssetCategory.bankSavings, groupedAssets),
+                                  _buildCategoryCard(AssetCategory.loans, groupedAssets),
+                                  _buildCategoryCard(AssetCategory.mutualFunds, groupedAssets),
+                                  _buildCategoryCard(AssetCategory.stocks, groupedAssets),
+                                  _buildCategoryCard(AssetCategory.insurance, groupedAssets),
+                                  _buildCategoryCard(AssetCategory.assets, groupedAssets),
+                                ],
                               ),
                             ),
+                            const SizedBox(height: 24),
+
+                            // Legacy Info Card
+                            const LegacyInfoCard(isForNok: true),
+                            const SizedBox(height: 24),
+
+                            // Claims Guidance Card
+                            _buildClaimsGuidanceCard(),
+                            const SizedBox(height: 24),
+
+                            // Detailed Breakdown Header
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: ShadcnColors.muted,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      Icons.list_alt,
+                                      size: 18,
+                                      color: ShadcnColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Detailed Asset Breakdown',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: ShadcnColors.foreground,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Collapsible Sections for each category
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  if (groupedAssets[AssetCategory.bankSavings] != null && groupedAssets[AssetCategory.bankSavings]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.bankSavings, groupedAssets[AssetCategory.bankSavings]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.loans] != null && groupedAssets[AssetCategory.loans]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.loans, groupedAssets[AssetCategory.loans]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.mutualFunds] != null && groupedAssets[AssetCategory.mutualFunds]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.mutualFunds, groupedAssets[AssetCategory.mutualFunds]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.stocks] != null && groupedAssets[AssetCategory.stocks]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.stocks, groupedAssets[AssetCategory.stocks]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.insurance] != null && groupedAssets[AssetCategory.insurance]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.insurance, groupedAssets[AssetCategory.insurance]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.digitalGold] != null && groupedAssets[AssetCategory.digitalGold]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.digitalGold, groupedAssets[AssetCategory.digitalGold]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.assets] != null && groupedAssets[AssetCategory.assets]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.assets, groupedAssets[AssetCategory.assets]!),
+                                    ),
+                                  if (groupedAssets[AssetCategory.other] != null && groupedAssets[AssetCategory.other]!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: _buildCollapsibleSection(context, AssetCategory.other, groupedAssets[AssetCategory.other]!),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Assets Overview Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF40C057).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.bar_chart,
-                    size: 18,
-                    color: Color(0xFF40C057),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Assets Overview',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${assetsState.assets.length} items',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Pie Chart
-            if (pieData.isNotEmpty) ...[
-              AssetPieChart(distributions: pieData),
-              const SizedBox(height: 16),
-            ],
-
-            // Asset Category Cards Grid
-            if (assetsState.isLoading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else ...[
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.3,
-                children: [
-                  _buildCategoryCard(AssetCategory.bankSavings, groupedAssets),
-                  _buildCategoryCard(AssetCategory.loans, groupedAssets),
-                  _buildCategoryCard(AssetCategory.mutualFunds, groupedAssets),
-                  _buildCategoryCard(AssetCategory.stocks, groupedAssets),
-                  _buildCategoryCard(AssetCategory.insurance, groupedAssets),
-                  _buildCategoryCard(AssetCategory.assets, groupedAssets),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Claims Info Card
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDBE4FF).withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF4263EB).withOpacity(0.3),
-                  ),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4263EB).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.info_outline,
-                        size: 24,
-                        color: Color(0xFF4263EB),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Claims Guidance',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF364FC7),
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Tap on any asset in the breakdown below for detailed claims guidance.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF364FC7),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
+    );
+  }
 
-              // Detailed Breakdown Header
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF40C057).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.list_alt,
-                      size: 18,
-                      color: Color(0xFF40C057),
-                    ),
+  Widget _buildAccountHolderCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFD3F9D8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF40C057).withOpacity(0.3)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF40C057).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.check_circle,
+              color: Color(0xFF40C057),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Account Holder: ${designation.accountHolderName ?? "Unknown"}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2B8A3E),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Detailed Breakdown',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Verified',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF2B8A3E),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF40C057),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              designation.relationship,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(height: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-              // Collapsible Sections for each category
-              ...groupedAssets.entries.map((entry) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildCollapsibleSection(context, entry.key, entry.value),
-                );
-              }),
-              const SizedBox(height: 24),
-            ],
+  Widget _buildClaimsGuidanceCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: ShadcnColors.card,
+          borderRadius: BorderRadius.circular(ShadcnColors.radius),
+          border: Border.all(color: ShadcnColors.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.info_outline, color: ShadcnColors.primary, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'Claims Guidance',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: ShadcnColors.foreground,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tap on any asset in the breakdown below for detailed step-by-step claims guidance specific to each provider.',
+              style: TextStyle(
+                fontSize: 12,
+                color: ShadcnColors.mutedForeground,
+              ),
+            ),
           ],
         ),
       ),
@@ -518,13 +654,15 @@ class AssetsRevealedScreen extends ConsumerWidget {
     Map<AssetCategory, List<AssetModel>> groupedAssets,
   ) {
     final assets = groupedAssets[category] ?? [];
-    final total = assets.fold<double>(0, (sum, a) => sum + a.value);
+    // For loans, use absolute value since they're negative
+    final total = assets.fold<double>(0, (sum, a) => sum + (a.value < 0 ? -a.value : a.value));
     
     return AssetCategoryCard(
       category: category,
       amount: total,
       count: assets.length,
       countLabel: _getCountLabel(category),
+      assets: category == AssetCategory.loans ? assets : null,
     );
   }
 
@@ -540,12 +678,252 @@ class AssetsRevealedScreen extends ConsumerWidget {
       iconColor: _getCategoryIconColor(category),
       child: Column(
         children: assets.map((asset) {
+          // Special handling for loans
+          if (category == AssetCategory.loans) {
+            return LoanDetailCard(loan: asset);
+          }
+          // Regular asset items with claims
           return _AssetItemWithClaim(
             asset: asset,
             isNegative: category == AssetCategory.loans,
           );
         }).toList(),
       ),
+    );
+  }
+}
+
+// Sticky Net Worth Header Delegate (same as main app)
+class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double netWorth;
+  final double totalAssets;
+  final double totalLiabilities;
+  final String? userName;
+  final double minHeight;
+  final double maxHeight;
+
+  _NetWorthHeaderDelegate({
+    required this.netWorth,
+    required this.totalAssets,
+    required this.totalLiabilities,
+    this.userName,
+    required this.minHeight,
+    required this.maxHeight,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final heightDiff = maxHeight - minHeight;
+    final progress = heightDiff > 0 ? (shrinkOffset / heightDiff).clamp(0.0, 1.0) : 0.0;
+    final isCollapsed = progress > 0.5;
+    final currentHeight = maxHeight - shrinkOffset;
+    final actualHeight = currentHeight.clamp(minHeight, maxHeight);
+
+    String formatCurrency(double amount) {
+      final formatter = NumberFormat.currency(
+        locale: 'en_IN',
+        symbol: '₹',
+        decimalDigits: 0,
+      );
+      return formatter.format(amount);
+    }
+
+    return SizedBox(
+      height: actualHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ShadcnColors.primary,
+              ShadcnColors.primary.withOpacity(0.9),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: isCollapsed ? 8 : 16),
+          child: isCollapsed
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _StickySummaryItem(
+                    label: 'Net Worth',
+                    value: netWorth,
+                    formatter: formatCurrency,
+                  ),
+                  Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+                  _StickySummaryItem(
+                    label: 'Assets',
+                    value: totalAssets,
+                    formatter: formatCurrency,
+                  ),
+                  Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+                  _StickySummaryItem(
+                    label: 'Liabilities',
+                    value: totalLiabilities,
+                    formatter: formatCurrency,
+                  ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_wallet, color: Colors.white.withOpacity(0.9), size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        userName != null ? 'Welcome, $userName' : 'Legacy Assets',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total Net Worth',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              formatCurrency(netWorth),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'What you\'re leaving behind',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(width: 1, height: 60, color: Colors.white.withOpacity(0.2)),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total Assets',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              formatCurrency(totalAssets),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Liabilities',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              formatCurrency(totalLiabilities),
+                              style: TextStyle(
+                                color: Colors.red.shade200,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_NetWorthHeaderDelegate oldDelegate) {
+    return oldDelegate.netWorth != netWorth ||
+        oldDelegate.totalAssets != totalAssets ||
+        oldDelegate.totalLiabilities != totalLiabilities;
+  }
+}
+
+class _StickySummaryItem extends StatelessWidget {
+  final String label;
+  final double value;
+  final String Function(double) formatter;
+
+  const _StickySummaryItem({
+    required this.label,
+    required this.value,
+    required this.formatter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.75),
+            fontSize: 10,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          formatter(value),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -643,9 +1021,9 @@ class _AssetItemWithClaim extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: ShadcnColors.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -658,7 +1036,7 @@ class _AssetItemWithClaim extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: ShadcnColors.mutedForeground.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -670,12 +1048,12 @@ class _AssetItemWithClaim extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4263EB).withOpacity(0.1),
+                    color: ShadcnColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.help_outline,
-                    color: Color(0xFF4263EB),
+                    color: ShadcnColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -694,7 +1072,7 @@ class _AssetItemWithClaim extends StatelessWidget {
                         asset.provider,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: ShadcnColors.mutedForeground,
                         ),
                       ),
                     ],
@@ -702,10 +1080,10 @@ class _AssetItemWithClaim extends StatelessWidget {
                 ),
                 Text(
                   _formatCurrency(asset.value),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF40C057),
+                    color: ShadcnColors.primary,
                   ),
                 ),
               ],
@@ -729,12 +1107,13 @@ class _AssetItemWithClaim extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4263EB),
-                  foregroundColor: Colors.white,
+                  backgroundColor: ShadcnColors.primary,
+                  foregroundColor: ShadcnColors.primaryForeground,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(ShadcnColors.radius),
                   ),
+                  elevation: 0,
                 ),
                 child: const Text('Got it'),
               ),
@@ -756,16 +1135,16 @@ class _AssetItemWithClaim extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: const Color(0xFF4263EB).withOpacity(0.1),
+              color: ShadcnColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
               child: Text(
                 '$number',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF4263EB),
+                  color: ShadcnColors.primary,
                 ),
               ),
             ),
@@ -787,7 +1166,7 @@ class _AssetItemWithClaim extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: ShadcnColors.mutedForeground,
                   ),
                 ),
               ],
