@@ -211,6 +211,44 @@ const MOCK_ASSETS_BY_PAN = {
           area: '800 sq yards',
           registrationDate: '2020-07-22'
         }
+      },
+      {
+        type: 'loan',
+        provider: 'HDFC Bank',
+        accountNumber: 'LOAN9876',
+        value: -2834921.34, // Negative value for liability
+        currency: 'INR',
+        isLiability: true,
+        details: {
+          loanType: 'Home Loan',
+          outstandingAmount: 2834921.34,
+          originalAmount: 4250000.00,
+          paidAmount: 1415078.66,
+          emi: 25147.00,
+          remainingMonths: 132,
+          tenure: 180,
+          purpose: 'House Purchase',
+          startDate: '2019-01-15'
+        }
+      },
+      {
+        type: 'loan',
+        provider: 'Bajaj Finserv',
+        accountNumber: 'LOAN5432',
+        value: -693555.00, // Negative value for liability
+        currency: 'INR',
+        isLiability: true,
+        details: {
+          loanType: 'Personal Loan',
+          outstandingAmount: 693555.00,
+          originalAmount: 1025000.00,
+          paidAmount: 331445.00,
+          emi: 15234.00,
+          remainingMonths: 20,
+          tenure: 60,
+          purpose: 'Personal',
+          startDate: '2022-06-01'
+        }
       }
     ]
   },

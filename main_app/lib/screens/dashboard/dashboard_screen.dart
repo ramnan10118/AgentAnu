@@ -27,15 +27,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final Map<String, bool> _flippedCards = {};
   final ScrollController _scrollController = ScrollController();
 
-  // ShadCN color palette
-  static const Color _shadcnBackground = Color(0xFFFFFFFF);
-  static const Color _shadcnForeground = Color(0xFF0F172A);
-  static const Color _shadcnCard = Color(0xFFFFFFFF);
-  static const Color _shadcnMuted = Color(0xFFF1F5F9);
-  static const Color _shadcnMutedForeground = Color(0xFF64748B);
-  static const Color _shadcnBorder = Color(0xFFE2E8F0);
-  static const Color _shadcnPrimary = Color(0xFF0F172A);
-  static const Color _shadcnPrimaryForeground = Color(0xFFF8FAFC);
+  // ShadCN color palette (matching shadcn/ui CSS variables)
+  static const Color _shadcnBackground = Color(0xFFFFFFFF); // hsl(0, 0%, 100%)
+  static const Color _shadcnForeground = Color(0xFF0C1220); // hsl(222.2, 84%, 4.9%)
+  static const Color _shadcnCard = Color(0xFFFFFFFF); // hsl(0, 0%, 100%)
+  static const Color _shadcnMuted = Color(0xFFF5F7FA); // hsl(210, 40%, 96.1%)
+  static const Color _shadcnMutedForeground = Color(0xFF64748B); // hsl(215.4, 16.3%, 46.9%)
+  static const Color _shadcnBorder = Color(0xFFE2E8F0); // hsl(214.3, 31.8%, 91.4%)
+  static const Color _shadcnPrimary = Color(0xFF1C2434); // hsl(222.2, 47.4%, 11.2%)
+  static const Color _shadcnPrimaryForeground = Color(0xFFFAFBFC); // hsl(210, 40%, 98%)
+  static const Color _shadcnSecondary = Color(0xFFF5F7FA); // hsl(210, 40%, 96.1%)
+  static const Color _shadcnAccent = Color(0xFFF5F7FA); // hsl(210, 40%, 96.1%)
 
   @override
   void initState() {
@@ -156,6 +158,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case 'property':
       case 'real_estate':
         return 'Assets Acquired';
+      case 'loan':
+        return 'Loans';
       default:
         return 'Other Assets';
     }
@@ -167,7 +171,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   double _calculateTotalLiabilities(List<AssetModel> assets) {
-    return 0.0;
+    return assets
+        .where((asset) => asset.type == 'loan' || asset.value < 0)
+        .fold(0.0, (sum, asset) => sum + (asset.value < 0 ? -asset.value : asset.value));
   }
 
   void _toggleFlip(String cardKey) {
@@ -244,11 +250,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           if (assetsState.assets.isNotEmpty && !assetsState.isLoading) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    Icon(Icons.pie_chart, color: _shadcnPrimary, size: 18),
-                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _shadcnMuted,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(Icons.pie_chart, color: _shadcnPrimary, size: 16),
+                    ),
+                    const SizedBox(width: 10),
                     const Text(
                       'Assets Overview',
                       style: TextStyle(
@@ -262,7 +275,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _shadcnMuted,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
                         'Just now',
@@ -276,8 +289,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             // Pie Chart
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _shadcnCard,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _shadcnBorder, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
                 child: AssetPieChart(assets: assetsState.assets),
               ),
             ),
@@ -285,7 +311,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             // Flip Cards Grid
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: _buildFlipCardsGrid(groupedAssets),
               ),
             ),
@@ -295,15 +321,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           if (assetsState.assets.isNotEmpty && !assetsState.isLoading) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    Icon(Icons.description, color: _shadcnPrimary, size: 20),
-                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _shadcnMuted,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(Icons.description, color: _shadcnPrimary, size: 16),
+                    ),
+                    const SizedBox(width: 10),
                     const Text(
                       'Detailed Asset Breakdown',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _shadcnForeground,
                       ),
@@ -388,7 +421,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildFlipCardsGrid(Map<String, List<AssetModel>> groupedAssets) {
-    final categories = ['Bank Savings', 'Mutual Funds', 'Stocks', 'Assets Acquired', 'Insurance', 'NPS'];
+    final categories = ['Bank Savings', 'Mutual Funds', 'Stocks', 'Assets Acquired', 'Insurance', 'NPS', 'Loans'];
     final categoryColors = {
       'Bank Savings': const Color(0xFF3B82F6),
       'Mutual Funds': const Color(0xFFA855F7),
@@ -396,6 +429,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       'Assets Acquired': const Color(0xFF22C55E),
       'Insurance': const Color(0xFFEF4444),
       'NPS': const Color(0xFF14B8A6),
+      'Loans': const Color(0xFFDC2626), // Red for liabilities
     };
     final categoryIcons = {
       'Bank Savings': Icons.account_balance,
@@ -404,22 +438,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       'Assets Acquired': Icons.home,
       'Insurance': Icons.security,
       'NPS': Icons.account_balance_wallet,
+      'Loans': Icons.credit_card,
     };
 
+    // Filter out categories that don't have any assets
+    final categoriesWithAssets = categories.where((cat) {
+      final assets = groupedAssets[cat] ?? [];
+      return assets.isNotEmpty;
+    }).toList();
+    
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.15,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        crossAxisCount: 3, // 3 columns for more compact layout
+        childAspectRatio: 1.5, // Wider, shorter cards
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
       ),
-      itemCount: categories.length,
+      itemCount: categoriesWithAssets.length,
       itemBuilder: (context, index) {
-        final category = categories[index];
+        final category = categoriesWithAssets[index];
         final assets = groupedAssets[category] ?? [];
-        final total = assets.fold(0.0, (sum, asset) => sum + asset.value);
+        // For loans, use absolute value since they're negative
+        final total = assets.fold(0.0, (sum, asset) => sum + (asset.value < 0 ? -asset.value : asset.value));
         final isFlipped = _flippedCards[category] ?? false;
         final color = categoryColors[category] ?? Colors.grey;
         final icon = categoryIcons[category] ?? Icons.category;
@@ -444,6 +486,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         count: assets.length,
                         color: color,
                         icon: icon,
+                        isLiability: category == 'Loans',
                       )
                     : Transform(
                         alignment: Alignment.center,
@@ -453,6 +496,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           category: category,
                           count: assets.length,
                           color: color,
+                          assets: category == 'Loans' ? assets : [],
                         ),
                       ),
               );
@@ -491,6 +535,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             color: _shadcnCard,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: _shadcnBorder, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -498,7 +549,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 onTap: () => _toggleSection(category),
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   child: Row(
                     children: [
                       Container(
@@ -533,9 +584,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
                 height: isExpanded ? null : 0,
-                child: isExpanded
+                    child: isExpanded
                     ? Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                         child: Column(
                           children: assets.map((asset) => _AssetListItem(asset: asset)).toList(),
                         ),
@@ -551,11 +602,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildOcrUploadSection() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _shadcnMuted.withOpacity(0.5),
+        color: _shadcnCard,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _shadcnBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,15 +640,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               color: _shadcnMutedForeground,
             ),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _handleDocumentUpload(),
-            icon: const Icon(Icons.upload, size: 16),
-            label: const Text('Upload Document'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _shadcnPrimary,
-              side: BorderSide(color: _shadcnBorder),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _handleDocumentUpload(),
+              icon: const Icon(Icons.upload, size: 16),
+              label: const Text('Upload Document'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _shadcnForeground,
+                side: BorderSide(color: _shadcnBorder, width: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
           ),
         ],
@@ -638,8 +702,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         } catch (e) {
           if (mounted) {
             Navigator.pop(context); // Close loading
+            String errorMessage = 'Error uploading document';
+            if (e.toString().contains('401')) {
+              errorMessage = 'Authentication failed. Please log in again.';
+            } else if (e.toString().contains('400')) {
+              errorMessage = 'Invalid file format. Please upload PDF, JPEG, or PNG.';
+            } else if (e.toString().contains('500')) {
+              errorMessage = 'Server error. Please try again later.';
+            } else {
+              errorMessage = 'Error: ${e.toString()}';
+            }
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${e.toString()}')),
+              SnackBar(
+                content: Text(errorMessage),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
             );
           }
         }
@@ -696,22 +774,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildNokStatus(NokState nokState) {
     if (!nokState.hasDesignation) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppConstants.secondaryColor.withOpacity(0.1),
+          color: _shadcnMuted.withOpacity(0.5),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppConstants.secondaryColor.withOpacity(0.3)),
+          border: Border.all(color: _shadcnBorder, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            const Icon(Icons.warning, color: AppConstants.secondaryColor, size: 20),
+            Icon(Icons.info_outline, color: _shadcnMutedForeground, size: 20),
             const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'No Next of Kin designated yet',
-                style: TextStyle(fontSize: 14, color: _shadcnForeground),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'No Next of Kin designated yet',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _shadcnForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Designate someone to access your assets',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _shadcnMutedForeground,
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(width: 12),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -722,8 +825,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.secondaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                backgroundColor: _shadcnPrimary,
+                foregroundColor: _shadcnPrimaryForeground,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
               ),
               child: const Text('Designate', style: TextStyle(fontSize: 13)),
             ),
@@ -733,28 +841,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: nokState.designation?.isAccepted == true
-            ? AppConstants.successColor.withOpacity(0.1)
-            : AppConstants.secondaryColor.withOpacity(0.1),
+        color: _shadcnCard,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: nokState.designation?.isAccepted == true
-              ? AppConstants.successColor.withOpacity(0.3)
-              : AppConstants.secondaryColor.withOpacity(0.3),
+              ? const Color(0xFF10B981).withOpacity(0.3)
+              : _shadcnBorder,
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            nokState.designation?.isAccepted == true
-                ? Icons.check_circle
-                : Icons.pending,
-            color: nokState.designation?.isAccepted == true
-                ? AppConstants.successColor
-                : AppConstants.secondaryColor,
-            size: 20,
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: nokState.designation?.isAccepted == true
+                  ? const Color(0xFF10B981).withOpacity(0.1)
+                  : _shadcnMuted,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              nokState.designation?.isAccepted == true
+                  ? Icons.check_circle
+                  : Icons.pending,
+              color: nokState.designation?.isAccepted == true
+                  ? const Color(0xFF10B981)
+                  : _shadcnMutedForeground,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -769,12 +892,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     color: _shadcnForeground,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   nokState.designation?.isAccepted == true
-                      ? 'Accepted'
+                      ? 'Designation accepted'
                       : 'Pending acceptance',
-                  style: const TextStyle(fontSize: 12, color: _shadcnMutedForeground),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _shadcnMutedForeground,
+                  ),
                 ),
               ],
             ),
@@ -798,6 +924,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         return const Color(0xFFEF4444);
       case 'NPS':
         return const Color(0xFF14B8A6);
+      case 'Loans':
+        return const Color(0xFFDC2626);
       default:
         return Colors.grey;
     }
@@ -817,6 +945,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         return Icons.security;
       case 'NPS':
         return Icons.account_balance_wallet;
+      case 'Loans':
+        return Icons.credit_card;
       default:
         return Icons.category;
     }
@@ -869,12 +999,12 @@ class _NetWorthHeaderDelegate extends SliverPersistentHeaderDelegate {
             end: Alignment.bottomRight,
             colors: [
               _DashboardScreenState._shadcnPrimary,
-              _DashboardScreenState._shadcnPrimary.withOpacity(0.85),
+              _DashboardScreenState._shadcnPrimary.withOpacity(0.9),
             ],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1058,6 +1188,7 @@ class _FlipCardFront extends StatelessWidget {
   final int count;
   final Color color;
   final IconData icon;
+  final bool isLiability;
 
   const _FlipCardFront({
     super.key,
@@ -1066,6 +1197,7 @@ class _FlipCardFront extends StatelessWidget {
     required this.count,
     required this.color,
     required this.icon,
+    this.isLiability = false,
   });
 
   @override
@@ -1077,19 +1209,20 @@ class _FlipCardFront extends StatelessWidget {
         border: Border.all(color: _DashboardScreenState._shadcnBorder, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
                     category,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: _DashboardScreenState._shadcnMutedForeground,
                     ),
@@ -1098,12 +1231,12 @@ class _FlipCardFront extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(icon, color: color, size: 14),
+                  child: Icon(icon, color: color, size: 11),
                 ),
               ],
             ),
@@ -1111,21 +1244,22 @@ class _FlipCardFront extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '₹${total.toStringAsFixed(0).replaceAllMapped(
+                  '${isLiability ? '-' : ''}₹${total.toStringAsFixed(0).replaceAllMapped(
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                     (Match m) => '${m[1]},',
                   )}',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: _DashboardScreenState._shadcnForeground,
+                    color: isLiability ? const Color(0xFFDC2626) : _DashboardScreenState._shadcnForeground,
+                    height: 1.0,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   '$count ${count == 1 ? 'item' : 'items'}',
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 9,
                     color: _DashboardScreenState._shadcnMutedForeground,
                   ),
                 ),
@@ -1142,12 +1276,14 @@ class _FlipCardBack extends StatelessWidget {
   final String category;
   final int count;
   final Color color;
+  final List<AssetModel> assets;
 
   const _FlipCardBack({
     super.key,
     required this.category,
     required this.count,
     required this.color,
+    this.assets = const [],
   });
 
   @override
@@ -1157,37 +1293,48 @@ class _FlipCardBack extends StatelessWidget {
         color: _DashboardScreenState._shadcnCard,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _DashboardScreenState._shadcnBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               category,
               style: const TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: _DashboardScreenState._shadcnForeground,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: color,
+            const SizedBox(height: 6),
+            if (category == 'Loans' && assets.isNotEmpty)
+              _LoanSummaryWidget(loans: assets)
+            else ...[
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
-            Text(
-              count == 1 ? 'item' : 'items',
-              style: const TextStyle(
-                fontSize: 11,
-                color: _DashboardScreenState._shadcnMutedForeground,
+              Text(
+                count == 1 ? 'item' : 'items',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: _DashboardScreenState._shadcnMutedForeground,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -1202,25 +1349,30 @@ class _AssetListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Special handling for loans
+    if (asset.type == 'loan') {
+      return _LoanDetailCard(loan: asset);
+    }
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _DashboardScreenState._shadcnMuted,
+        color: _DashboardScreenState._shadcnMuted.withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: _DashboardScreenState._shadcnBorder, width: 0.5),
+        border: Border.all(color: _DashboardScreenState._shadcnBorder, width: 1),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppConstants.primaryColor.withOpacity(0.1),
+              color: _DashboardScreenState._shadcnPrimary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
               AppConstants.assetIcons[asset.type] ?? Icons.account_balance,
-              color: AppConstants.primaryColor,
+              color: _DashboardScreenState._shadcnPrimary,
               size: 16,
             ),
           ),
@@ -1250,11 +1402,361 @@ class _AssetListItem extends StatelessWidget {
           ),
           Text(
             asset.formattedValue,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: AppConstants.primaryColor,
+              color: _DashboardScreenState._shadcnPrimary,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Loan Summary Widget for flip card back
+class _LoanSummaryWidget extends StatelessWidget {
+  final List<AssetModel> loans;
+
+  const _LoanSummaryWidget({required this.loans});
+
+  @override
+  Widget build(BuildContext context) {
+    final totalEMI = loans.fold<double>(0.0, (sum, loan) {
+      final emi = (loan.details['emi'] as num?)?.toDouble() ?? 0.0;
+      return sum + emi;
+    });
+    
+    final avgRemainingMonths = loans.isEmpty ? 0 : (loans.fold<int>(0, (sum, loan) {
+      final months = (loan.details['remainingMonths'] as num?)?.toInt() ?? 0;
+      return sum + months;
+    }) / loans.length).round();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '${loans.length}',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFDC2626),
+          ),
+        ),
+        const Text(
+          'loans',
+          style: TextStyle(
+            fontSize: 10,
+            color: _DashboardScreenState._shadcnMutedForeground,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '₹${totalEMI.toStringAsFixed(0).replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            (Match m) => '${m[1]},',
+          )}/mo',
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: _DashboardScreenState._shadcnMutedForeground,
+          ),
+        ),
+        Text(
+          '$avgRemainingMonths months left',
+          style: const TextStyle(
+            fontSize: 9,
+            color: _DashboardScreenState._shadcnMutedForeground,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Loan Detail Card for collapsible sections
+class _LoanDetailCard extends StatelessWidget {
+  final AssetModel loan;
+
+  const _LoanDetailCard({required this.loan});
+
+  @override
+  Widget build(BuildContext context) {
+    final details = loan.details;
+    final loanType = details['loanType'] as String? ?? 'Loan';
+    final purpose = details['purpose'] as String? ?? 'N/A';
+    final outstanding = loan.value < 0 ? -loan.value : loan.value;
+    final originalAmount = (details['originalAmount'] as num?)?.toDouble() ?? 0.0;
+    final paidAmount = (details['paidAmount'] as num?)?.toDouble() ?? 0.0;
+    final emi = (details['emi'] as num?)?.toDouble() ?? 0.0;
+    final remainingMonths = (details['remainingMonths'] as num?)?.toInt() ?? 0;
+    final tenure = (details['tenure'] as num?)?.toInt() ?? 0;
+    
+    final progressPercent = originalAmount > 0 ? (paidAmount / originalAmount * 100).clamp(0.0, 100.0) : 0.0;
+    
+    String purposeIcon = '💼';
+    if (purpose.toLowerCase().contains('house') || purpose.toLowerCase().contains('home')) {
+      purposeIcon = '🏠';
+    } else if (purpose.toLowerCase().contains('car') || purpose.toLowerCase().contains('vehicle')) {
+      purposeIcon = '🚗';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _DashboardScreenState._shadcnCard,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _DashboardScreenState._shadcnBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          purposeIcon,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          loanType,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: _DashboardScreenState._shadcnForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      loan.provider,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: _DashboardScreenState._shadcnMutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _DashboardScreenState._shadcnPrimary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        purpose,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: _DashboardScreenState._shadcnPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '₹${outstanding.toStringAsFixed(0).replaceAllMapped(
+                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                      (Match m) => '${m[1]},',
+                    )}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                  const Text(
+                    'Outstanding',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _DashboardScreenState._shadcnMutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          
+          // Progress section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Original Amount',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _DashboardScreenState._shadcnMutedForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '₹${originalAmount.toStringAsFixed(0).replaceAllMapped(
+                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                      (Match m) => '${m[1]},',
+                    )}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _DashboardScreenState._shadcnForeground,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'Amount Paid',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _DashboardScreenState._shadcnMutedForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '₹${paidAmount.toStringAsFixed(0).replaceAllMapped(
+                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                      (Match m) => '${m[1]},',
+                    )}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progressPercent / 100,
+              minHeight: 6,
+              backgroundColor: _DashboardScreenState._shadcnMuted,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              '${progressPercent.toStringAsFixed(1)}% paid',
+              style: const TextStyle(
+                fontSize: 10,
+                color: _DashboardScreenState._shadcnMutedForeground,
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          
+          // EMI details
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    const Text(
+                      'EMI',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: _DashboardScreenState._shadcnMutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '₹${emi.toStringAsFixed(0).replaceAllMapped(
+                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                        (Match m) => '${m[1]},',
+                      )}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _DashboardScreenState._shadcnForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 30, color: _DashboardScreenState._shadcnBorder),
+              Expanded(
+                child: Column(
+                  children: [
+                    const Text(
+                      'Remaining',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: _DashboardScreenState._shadcnMutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$remainingMonths months',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _DashboardScreenState._shadcnForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 30, color: _DashboardScreenState._shadcnBorder),
+              Expanded(
+                child: Column(
+                  children: [
+                    const Text(
+                      'Total Tenure',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: _DashboardScreenState._shadcnMutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$tenure months',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _DashboardScreenState._shadcnForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1330,8 +1832,8 @@ class _AssetBottomSheet extends StatelessWidget {
               color: _DashboardScreenState._shadcnMuted.withOpacity(0.5),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppConstants.primaryColor.withOpacity(0.3),
-                width: 2,
+                color: _DashboardScreenState._shadcnBorder,
+                width: 1,
               ),
             ),
             child: Row(
@@ -1350,10 +1852,10 @@ class _AssetBottomSheet extends StatelessWidget {
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                     (Match m) => '${m[1]},',
                   )}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppConstants.primaryColor,
+                    color: _DashboardScreenState._shadcnPrimary,
                   ),
                 ),
               ],
@@ -1369,7 +1871,10 @@ class _AssetBottomSheet extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(color: _DashboardScreenState._shadcnBorder),
+                    side: BorderSide(color: _DashboardScreenState._shadcnBorder, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text('Dismiss'),
                 ),
@@ -1380,9 +1885,13 @@ class _AssetBottomSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onAdd,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppConstants.primaryColor,
-                    foregroundColor: Colors.white,
+                    backgroundColor: _DashboardScreenState._shadcnPrimary,
+                    foregroundColor: _DashboardScreenState._shadcnPrimaryForeground,
                     padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
                   ),
                   child: const Text('Add to Portfolio'),
                 ),

@@ -71,9 +71,15 @@ class AssetModel {
         return 'NPS';
       case 'securities':
         return 'Securities';
+      case 'loan':
+        return details['loanType'] as String? ?? 'Loan';
       default:
         return type;
     }
+  }
+  
+  bool get isLiability {
+    return type == 'loan' || value < 0;
   }
 
   String get formattedValue {

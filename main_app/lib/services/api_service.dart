@@ -26,8 +26,12 @@ class ApiService {
         final token = _storage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          print('🔑 Token added to request: ${token.substring(0, 10)}...');
+        } else {
+          print('⚠️ No token found for request');
         }
         print('🌐 ${options.method} ${options.path}');
+        print('📋 Headers: ${options.headers}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
@@ -173,7 +177,7 @@ class ApiService {
       'file': await MultipartFile.fromFile(filePath),
     });
     final response = await _dio.post(
-      '/api/ocr/extract-asset',
+      '/ocr/extract-asset',
       data: formData,
       options: Options(
         headers: {
@@ -194,14 +198,11 @@ class ApiService {
         filename: fileName,
       ),
     });
+    // Don't set Content-Type manually - Dio will set it with boundary for multipart
+    // The interceptor will add Authorization header automatically
     final response = await _dio.post(
-      '/api/ocr/extract-asset',
+      '/ocr/extract-asset',
       data: formData,
-      options: Options(
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      ),
     );
     return response.data as Map<String, dynamic>;
   }
@@ -216,7 +217,7 @@ class ApiService {
     String? accountNumber,
     Map<String, dynamic>? details,
   }) async {
-    final response = await _dio.post('/api/assets/manual', data: {
+    final response = await _dio.post('/assets/manual', data: {
       'type': type,
       'name': name,
       'location': location,
