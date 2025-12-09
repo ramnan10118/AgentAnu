@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/designation_model.dart';
 import '../services/api_service.dart';
+import '../services/socket_service.dart';
 
 class NokState {
   final DesignationModel? designation;
@@ -122,6 +123,9 @@ class NokNotifier extends StateNotifier<NokState> {
     try {
       final response = await _apiService.acceptDesignation(designationId);
       if (response['success'] == true) {
+        // Emit socket event immediately after API success
+        SocketService().emitNokAccept(designationId);
+
         // Update the designation in the list
         await getDesignations();
         state = state.copyWith(isLoading: false);

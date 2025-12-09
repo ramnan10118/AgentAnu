@@ -63,11 +63,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false);
       return response['success'] == true;
     } catch (e) {
-      print('❌ Send OTP Error: $e');
-      final errorMessage = e.toString().contains('Failed host lookup') 
-          ? 'Cannot connect to server. Make sure backend is running on http://localhost:3000'
-          : e.toString();
-      state = state.copyWith(isLoading: false, error: errorMessage);
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }

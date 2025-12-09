@@ -15,15 +15,23 @@ export const setupSocketHandlers = (io) => {
     socket.on('authenticate', (data) => {
       try {
         const { token } = data;
+        console.log(`[SOCKET-AUTH] Authentication attempt for socket: ${socket.id}`);
 
+        // Allow anonymous connections (for companion app)
         if (!token) {
-          socket.emit('error', { message: 'Token required for authentication' });
+          console.log(`[SOCKET-AUTH] ℹ️ No token provided - allowing anonymous connection`);
+          socket.emit('authenticated', {
+            success: true,
+            message: 'Connected anonymously'
+          });
+          console.log(`[SOCKET-AUTH] ✅ Anonymous connection allowed for socket ${socket.id}`);
           return;
         }
 
         const user = db.getUserBySession(token);
 
         if (!user) {
+          console.log(`[SOCKET-AUTH] ❌ Invalid token`);
           socket.emit('error', { message: 'Invalid token' });
           return;
         }
@@ -40,13 +48,15 @@ export const setupSocketHandlers = (io) => {
           mobile: user.mobile
         });
 
-        console.log(`✅ Socket authenticated: ${socket.id} -> User: ${user.id}`);
+        console.log(`[SOCKET-AUTH] ✅ User ${user.id} (${user.mobile}) authenticated on socket ${socket.id}`);
+        console.log(`[SOCKET-MAP] Stored mapping: userId=${user.id} -> socketId=${socket.id}`);
 
         // Check for pending designations (if NOK)
         const designations = db.getNOKDesignationsByMobile(user.mobile);
         const pendingDesignations = designations.filter(d => d.status === 'pending');
 
         if (pendingDesignations.length > 0) {
+          console.log(`[SOCKET-AUTH] Sending ${pendingDesignations.length} pending designation(s)`);
           pendingDesignations.forEach(designation => {
             socket.emit('nok:designated', {
               designationId: designation.id,
@@ -65,6 +75,7 @@ export const setupSocketHandlers = (io) => {
           if (designation.status === 'accepted') {
             const deathCert = db.getDeathCertificate(designation.accountHolderId);
             if (deathCert && deathCert.status === 'verified') {
+              console.log(`[SOCKET-AUTH] Sending verified death certificate notification`);
               socket.emit('death:verified', {
                 accountHolderId: designation.accountHolderId,
                 verifiedAt: deathCert.verifiedAt
@@ -73,7 +84,7 @@ export const setupSocketHandlers = (io) => {
           }
         });
       } catch (error) {
-        console.error('Authentication error:', error);
+        console.error('[SOCKET-AUTH] Error:', error);
         socket.emit('error', { message: 'Authentication failed' });
       }
     });
@@ -132,41 +143,57 @@ export const setupSocketHandlers = (io) => {
     socket.on('nok:accept', (data) => {
       try {
         const { designationId } = data;
+        console.log(`[NOK-ACCEPT] Received event for designation: ${designationId}`);
 
         const designation = db.getNOKDesignation(designationId);
 
         if (!designation) {
+          console.log(`[NOK-ACCEPT] ❌ Designation not found: ${designationId}`);
           socket.emit('error', { message: 'Designation not found' });
           return;
         }
 
+        console.log(`[NOK-ACCEPT] Designation status: ${designation.status}`);
+
         if (designation.status !== 'accepted') {
+          console.log(`[NOK-ACCEPT] ❌ Designation not accepted yet (status: ${designation.status})`);
           socket.emit('error', { message: 'Designation not accepted yet' });
           return;
         }
 
-        console.log(`✅ NOK accepted event: ${designationId}`);
+        console.log(`[NOK-ACCEPT] ✅ NOK accepted event validated: ${designationId}`);
+        console.log(`[NOK-ACCEPT] Looking for account holder socket for userId: ${designation.accountHolderId}`);
 
         // Send notification to account holder
         const accountHolderSocketId = db.getSocketConnection(designation.accountHolderId);
+        console.log(`[NOK-ACCEPT] Account holder socketId: ${accountHolderSocketId || 'NOT_FOUND'}`);
 
         if (accountHolderSocketId) {
-          io.to(accountHolderSocketId).emit('nok:accepted', {
+          const notificationData = {
             designationId: designation.id,
             nokName: designation.nokName,
             nokMobile: designation.nokMobile,
             acceptedAt: designation.respondedAt
-          });
+          };
 
-          console.log(`📤 Sent acceptance notification to account holder socket: ${accountHolderSocketId}`);
+          console.log(`[NOK-ACCEPT] Emitting 'nok:accepted' to socket ${accountHolderSocketId}`);
+          console.log(`[NOK-ACCEPT] Notification data:`, JSON.stringify(notificationData));
+
+          io.to(accountHolderSocketId).emit('nok:accepted', notificationData);
+
+          console.log(`[NOK-ACCEPT] ✅ Sent acceptance notification to account holder socket: ${accountHolderSocketId}`);
+        } else {
+          console.log(`[NOK-ACCEPT] ⚠️ Cannot notify - account holder not connected`);
+          console.log(`[NOK-ACCEPT] All connected sockets:`, Array.from(io.sockets.sockets.keys()));
         }
 
         socket.emit('nok:accept:success', {
           designationId: designation.id,
           status: designation.status
         });
+        console.log(`[NOK-ACCEPT] Sent success confirmation to NOK`);
       } catch (error) {
-        console.error('Accept NOK error:', error);
+        console.error('[NOK-ACCEPT] Error:', error);
         socket.emit('error', { message: 'Failed to accept designation' });
       }
     });

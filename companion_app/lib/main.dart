@@ -4,6 +4,7 @@ import 'package:forui/forui.dart';
 import 'services/storage_service.dart';
 import 'screens/auth/mobile_entry_screen.dart';
 import 'screens/dashboard/nok_dashboard_screen.dart';
+import 'screens/initial_screen.dart';
 import 'providers/auth_provider.dart';
 
 void main() async {
@@ -37,9 +38,9 @@ class MyApp extends ConsumerWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF9FAFB),
       ),
-      home: authState.isAuthenticated 
-          ? const NokDashboardScreen() 
-          : const MobileEntryScreen(),
+      home: authState.isAuthenticated
+          ? const NokDashboardScreen()
+          : const InitialScreen(),
     );
   }
 }

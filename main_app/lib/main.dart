@@ -24,7 +24,6 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Only watch - never modify providers in build
     final authState = ref.watch(authProvider);
 
     return MaterialApp(

@@ -26,12 +26,8 @@ class ApiService {
         final token = _storage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
-          print('🔑 Token added to request: ${token.substring(0, 10)}...');
-        } else {
-          print('⚠️ No token found for request');
         }
         print('🌐 ${options.method} ${options.path}');
-        print('📋 Headers: ${options.headers}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
@@ -168,64 +164,6 @@ class ApiService {
 
   Future<Map<String, dynamic>> getClaimsGuidance(String assetType) async {
     final response = await _dio.get('${ApiConfig.deathClaimsGuidance}/$assetType');
-    return response.data as Map<String, dynamic>;
-  }
-
-  // OCR endpoints
-  Future<Map<String, dynamic>> extractAssetFromDocument(String filePath) async {
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
-    });
-    final response = await _dio.post(
-      '/ocr/extract-asset',
-      data: formData,
-      options: Options(
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      ),
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  Future<Map<String, dynamic>> extractAssetFromBytes(
-    List<int> fileBytes,
-    String fileName,
-  ) async {
-    final formData = FormData.fromMap({
-      'file': MultipartFile.fromBytes(
-        fileBytes,
-        filename: fileName,
-      ),
-    });
-    // Don't set Content-Type manually - Dio will set it with boundary for multipart
-    // The interceptor will add Authorization header automatically
-    final response = await _dio.post(
-      '/ocr/extract-asset',
-      data: formData,
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  // Manual asset endpoints
-  Future<Map<String, dynamic>> addManualAsset({
-    required String type,
-    required String name,
-    String? location,
-    required double value,
-    String? provider,
-    String? accountNumber,
-    Map<String, dynamic>? details,
-  }) async {
-    final response = await _dio.post('/assets/manual', data: {
-      'type': type,
-      'name': name,
-      'location': location,
-      'value': value,
-      'provider': provider ?? name,
-      'accountNumber': accountNumber,
-      'details': details ?? {},
-    });
     return response.data as Map<String, dynamic>;
   }
 }
