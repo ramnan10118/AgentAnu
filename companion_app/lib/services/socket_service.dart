@@ -118,9 +118,20 @@ class SocketService {
   }
 
   void emitNokAccept(String designationId) {
+    print('📤 [SOCKET-EMIT] Attempting to emit nok:accept for $designationId');
+    print('📤 [SOCKET-EMIT] Socket exists: ${_socket != null}');
+    print('📤 [SOCKET-EMIT] Socket connected: ${_socket?.connected ?? false}');
+
+    if (_socket == null || !_socket!.connected) {
+      print('❌ [SOCKET-EMIT] Cannot emit - socket not connected!');
+      return;
+    }
+
     _socket!.emit(ApiConfig.socketNokAccept, {
       'designationId': designationId,
     });
+
+    print('✅ [SOCKET-EMIT] Emission completed for nok:accept');
   }
 
   void emitNokReject(String designationId) {

@@ -339,7 +339,8 @@ class _NokDashboardScreenState extends ConsumerState<NokDashboardScreen> {
 
   @override
   void dispose() {
-    _socketService.disconnect();
+    // Don't disconnect socket here - it should stay connected for the entire session
+    // Only disconnect on actual logout (which happens in _logout() method)
     super.dispose();
   }
 }

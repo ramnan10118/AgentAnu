@@ -33,7 +33,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   void _initializeSocket() {
+    print('📱 [DASHBOARD] Initializing socket callbacks');
+    print('📱 [DASHBOARD] Socket connected: ${_socketService.isConnected}');
+
     _socketService.onNokAccepted = (data) {
+      print('📱 [DASHBOARD] onNokAccepted callback triggered!');
+      print('📱 [DASHBOARD] Data: $data');
+      print('📱 [DASHBOARD] Mounted: $mounted');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -43,10 +50,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         );
         ref.read(nokProvider.notifier).getNokStatus();
+        print('📱 [DASHBOARD] Snackbar shown and NOK status refreshed');
       }
     };
 
     _socketService.onNokRejected = (data) {
+      print('📱 [DASHBOARD] onNokRejected callback triggered!');
+      print('📱 [DASHBOARD] Data: $data');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -59,7 +70,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       }
     };
 
+    print('📱 [DASHBOARD] Callbacks registered. Connecting socket...');
     _socketService.connect();
+    print('📱 [DASHBOARD] Socket connection requested');
   }
 
   Future<void> _loadData() async {
@@ -678,7 +691,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   void dispose() {
-    _socketService.disconnect();
+    // Don't disconnect socket here - it should stay connected for the entire session
+    // Only disconnect on actual logout (which happens in _logout() method)
     super.dispose();
   }
 }
